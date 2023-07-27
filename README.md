@@ -1,8 +1,10 @@
+## What is Blessed
+
 This is the draft implementation of _Blessed_ Node.JS library in PureScript. The library provides you as a developer with windows-driven GUI (including basic components) to the terminal applications.
 
 There are windows a.k.a. boxes with support of dragging, lists of items, a file manager, buttons, and many more, [see for yourself](https://github.com/chjj/blessed).
 
-What is moved:
+## What is moved
 
 * All the components from the basic repository;
 * Most of the options, properties and methods;
@@ -15,7 +17,13 @@ Not yet translated/implemented:
 * The subjects of the events handlers, so it would be easy for you to subscribe to the event of the component and get the corresponding object decoded from JSON;
 * A lot of things...
 
+## Installation
+
 It is crucial to install `npm install -g blessed` beforehand and ensure to have the latest version of node.js, or just the best one of the latest versions.
+
+The library is not distributed (yet?) so there's no `spago install`, sorry. But you may add it to `packages.dhall` using custom git link, just name it `blessed` or something.
+
+## Quick intro to the API 
 
 The key in this PureScript implementation is the `Key`... and `Subject` :). [Subject](https://github.com/shamansir/purescript-blessed/blob/main/src/Blessed/Internal/BlessedSubj.purs). [NodeKey](https://github.com/shamansir/purescript-blessed/blob/main/src/Blessed/Internal/NodeKey.purs). 
 
@@ -87,6 +95,8 @@ All the components are of type `Blessed m` where `m` is usually just the `Effect
 `BlessedOp state m` is the free monad for handlers and initialisation code, where `m` should be the same as above, and `state` is the global state of your components. 
 
 To run the application, use `Blessed.run <initialState> <rootComponent>` or `Blessed.runAnd <initialState> <rootComponent> $ do ....`.
+
+## Examples
 
 You may see many examples of its usage in the `Noodle/Cli` application, and currently this repo is just the extract from there. [Noodle CLI components](https://github.com/shamansir/noodle/tree/main/src/Cli/Components).
 
