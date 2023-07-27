@@ -51,7 +51,7 @@ Where `Blessed.box` could be `Blessed.list` or `Blessed.fileManager` etc.
 
 Or, this way:
 
-```
+```purescript
 Blessed.boxAnd <yourKey>
 	[ Box.<someOption> <someValue>
 	, Box.<someOption> <someValue>
