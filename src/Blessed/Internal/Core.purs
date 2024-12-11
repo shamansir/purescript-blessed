@@ -211,27 +211,27 @@ type SetterFnC2 (subj :: K.Subject) (id :: Symbol) (propA :: Symbol) (propB :: S
 
 getter :: forall parent subj id prop state m a. Gets parent subj id prop m a => Proxy parent -> GetterFn subj id prop state m a
 getter _ prop nodeKey =
-    Op.performGet (NK.rawify nodeKey) $ Cmd.get $ reflectSymbol prop
+    Op.performGet (NK.toRaw nodeKey) $ Cmd.get $ reflectSymbol prop
 
 
 getterC :: forall parent subj id prop state m a. GetsC parent subj id prop m a => Proxy parent -> GetterFnC subj id prop state m a
 getterC _ prop codec nodeKey =
-    Op.performGetC codec (NK.rawify nodeKey) $ Cmd.get $ reflectSymbol prop
+    Op.performGetC codec (NK.toRaw nodeKey) $ Cmd.get $ reflectSymbol prop
 
 
 getter2 :: forall parent subj id propA propB state m a. Gets2 parent subj id propA propB m a => Proxy parent -> GetterFn2 subj id propA propB state m a
 getter2 _ propA propB nodeKey =
-    Op.performGet (NK.rawify nodeKey) $ Cmd.getP [ reflectSymbol propA, reflectSymbol propB ]
+    Op.performGet (NK.toRaw nodeKey) $ Cmd.getP [ reflectSymbol propA, reflectSymbol propB ]
 
 
 getterC2 :: forall parent subj id propA propB state m a. GetsC2 parent subj id propA propB m a => Proxy parent -> GetterFnC2 subj id propA propB state m a
 getterC2 _ propA propB codec nodeKey =
-    Op.performGetC codec (NK.rawify nodeKey) $ Cmd.getP [ reflectSymbol propA, reflectSymbol propB ]
+    Op.performGetC codec (NK.toRaw nodeKey) $ Cmd.getP [ reflectSymbol propA, reflectSymbol propB ]
 
 
 method ∷ forall subj id state (m ∷ Type -> Type). K.IsSubject subj => IsSymbol id => NodeKey subj id → String → Array Json → Op.BlessedOp state m
 method nodeKey name args =
-    Op.perform (NK.rawify nodeKey) $ Cmd.call name args
+    Op.perform (NK.toRaw nodeKey) $ Cmd.call name args
 
 
 nmethod ∷ forall subj id state (m ∷ Type -> Type). K.IsSubject subj => IsSymbol id => NodeKey subj id → String → Array (Cmd.NodeOrJson state) → Op.BlessedOp state m
@@ -240,17 +240,17 @@ nmethod nodeKey name args =
         let
             foldF (Cmd.JsonArg json) (allJsons /\ allHandlers) = Array.snoc allJsons json /\ allHandlers
             foldF (Cmd.NodeArg node) (allJsons /\ allHandlers) =
-                case Foreign.encode' stateRef (Just $ NK.rawify nodeKey) node of
+                case Foreign.encode' stateRef (Just $ NK.toRaw nodeKey) node of
                     nodeEnc /\ nodeHandlers -> Array.snoc allJsons (CA.encode Codec.nodeEnc nodeEnc) /\ (allHandlers <> nodeHandlers)
             jsonArgs /\ handlers = foldr foldF ([] /\ []) args
-        in Op.perform (NK.rawify nodeKey) $ Cmd.callEx name jsonArgs handlers
+        in Op.perform (NK.toRaw nodeKey) $ Cmd.callEx name jsonArgs handlers
 
 
 cmethod ∷ forall subj id state (m ∷ Type -> Type) e. E.Fires subj e => E.Events e => K.IsSubject subj => IsSymbol id => NodeKey subj id → String → Array Json -> Array (e /\ HandlerFn subj id state) → Op.BlessedOp state m
 cmethod nodeKey name jsonArgs handlers =
     Op.getStateRef >>= \stateRef ->
         let
-            rawNodeKey = NK.rawify nodeKey
+            rawNodeKey = NK.toRaw nodeKey
             encodeHandler index (event /\ op) =
                 case E.split event of
                     eventId /\ arguments ->
@@ -262,9 +262,9 @@ cmethod nodeKey name jsonArgs handlers =
             handlersPairs = Array.mapWithIndex encodeHandler handlers
             encodedHandlersRefs = CA.encode Codec.handlerRefEnc <$> Tuple.fst <$> handlersPairs
             encodedHandlers = Tuple.snd <$> handlersPairs
-        in Op.perform (NK.rawify nodeKey) $ Cmd.callEx name (jsonArgs <> encodedHandlersRefs) encodedHandlers
-        -- in Op.perform (NK.rawify nodeKey) $ Cmd.callEx name (encodedHandlersRefs) encodedHandlers
-        -- in Op.perform (NK.rawify nodeKey) $ Cmd.callEx name jsonArgs encodedHandlers
+        in Op.perform (NK.toRaw nodeKey) $ Cmd.callEx name (jsonArgs <> encodedHandlersRefs) encodedHandlers
+        -- in Op.perform (NK.toRaw nodeKey) $ Cmd.callEx name (encodedHandlersRefs) encodedHandlers
+        -- in Op.perform (NK.toRaw nodeKey) $ Cmd.callEx name jsonArgs encodedHandlers
 
 
 subscription ∷ forall subj id state (m ∷ Type -> Type) e. K.IsSubject subj => IsSymbol id => E.Fires subj e => NodeKey subj id → e → HandlerFn subj id state -> Op.BlessedOp state m
@@ -272,9 +272,9 @@ subscription nodeKey event op =
     Op.getStateRef >>= \stateRef ->
         case E.split event of
             eventId /\ arguments ->
-                Op.perform (NK.rawify nodeKey)
+                Op.perform (NK.toRaw nodeKey)
                     $ Cmd.sub (E.typeOf eventId) arguments
-                    $ Foreign.encodeHandler stateRef (NK.rawify nodeKey) (Foreign.HandlerIndex 0)
+                    $ Foreign.encodeHandler stateRef (NK.toRaw nodeKey) (Foreign.HandlerIndex 0)
                     $ Op.makeHandler nodeKey eventId arguments op
 
 
@@ -284,22 +284,22 @@ on' e h key = subscription key e h
 
 setter ∷ forall parent subj id prop state (m ∷ Type -> Type) a. Sets parent subj id prop m a => Proxy parent -> SetterFn subj id prop state m a
 setter _ prop cvalue nodeKey =
-    Op.perform (NK.rawify nodeKey) $ Cmd.set (reflectSymbol prop) $ encodeJson cvalue
+    Op.perform (NK.toRaw nodeKey) $ Cmd.set (reflectSymbol prop) $ encodeJson cvalue
 
 
 setter2 ∷ forall parent subj id propA propB state (m ∷ Type -> Type) a. Sets2 parent subj id propA propB m a => Proxy parent -> SetterFn2 subj id propA propB state m a
 setter2 _ propA propB cvalue nodeKey =
-    Op.perform (NK.rawify nodeKey) $ Cmd.setP [ reflectSymbol propA, reflectSymbol propB ] $ encodeJson cvalue
+    Op.perform (NK.toRaw nodeKey) $ Cmd.setP [ reflectSymbol propA, reflectSymbol propB ] $ encodeJson cvalue
 
 
 setterC ∷ forall parent subj id prop state (m ∷ Type -> Type) a. SetsC parent subj id prop m a => Proxy parent -> SetterFnC subj id prop state m a
 setterC _ prop codec cvalue nodeKey =
-    Op.perform (NK.rawify nodeKey) $ Cmd.set (reflectSymbol prop) $ CA.encode codec cvalue
+    Op.perform (NK.toRaw nodeKey) $ Cmd.set (reflectSymbol prop) $ CA.encode codec cvalue
 
 
 setterC2 ∷ forall parent subj id propA propB state (m ∷ Type -> Type) a. SetsC2 parent subj id propA propB m a => Proxy parent -> SetterFnC2 subj id propA propB state m a
 setterC2 _ propA propB codec cvalue nodeKey =
-    Op.perform (NK.rawify nodeKey) $ Cmd.setP [ reflectSymbol propA, reflectSymbol propB ] $ CA.encode codec cvalue
+    Op.perform (NK.toRaw nodeKey) $ Cmd.setP [ reflectSymbol propA, reflectSymbol propB ] $ CA.encode codec cvalue
 
 
 instance EncodeJson (SoleOption r) where
@@ -313,13 +313,13 @@ encode = Foreign.encode
 
 node :: forall subj id state r. K.IsSubject subj => IsSymbol id => NodeKey subj id -> Node subj id state r
 node nodeKey attrs children =
-    I.SNode (NK.rawify nodeKey) sprops children handlers
+    I.SNode (NK.toRaw nodeKey) sprops children handlers
     where sprops /\ handlers = splitAttributes attrs
 
 
 nodeAnd :: forall subj id state r e. K.IsSubject subj => IsSymbol id => E.Events e => Proxy e -> NodeKey subj id -> NodeAnd subj id state r
 nodeAnd _ nodeKey attrs children fn =
-    I.SNode (NK.rawify nodeKey) sprops children (Op.makeHandler nodeKey initialId initalArgs (\id _ -> fn id) : handlers)
+    I.SNode (NK.toRaw nodeKey) sprops children (Op.makeHandler nodeKey initialId initalArgs (\id _ -> fn id) : handlers)
     where
         sprops /\ handlers = splitAttributes attrs
         initialId /\ initalArgs = E.split (E.initial :: e)

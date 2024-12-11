@@ -6,7 +6,7 @@ import Prim.Symbol (class Append) as S
 import Data.Enum (class Enum)
 import Data.Newtype (class Newtype)
 import Data.Symbol (class IsSymbol, reflectSymbol, reifySymbol)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (maybe, Maybe(..))
 import Type.Proxy (Proxy(..))
 import Data.Tuple (curry, uncurry)
 import Data.Tuple.Nested ((/\), type (/\))
@@ -22,7 +22,12 @@ import Blessed.Internal.BlessedSubj as K
 
 
 data NodeKey (kind :: K.Subject) (symbol :: Symbol) = NodeKey (Maybe Int)
-newtype RawNodeKey = RawNodeKey { subject :: K.Subject_, id :: String } -- FIXME: include index separately, not in `id`
+newtype RawNodeKey =
+    RawNodeKey
+        { subject :: K.Subject_
+        , userId :: String
+        , mbIndex :: Maybe Int
+        }
 
 
 derive instance Newtype RawNodeKey _
@@ -30,8 +35,10 @@ derive newtype instance EncodeJson RawNodeKey
 
 
 -- private
-raw :: K.Subject_ -> String -> RawNodeKey
-raw subject id = RawNodeKey { subject, id }
+{-
+raw :: K.Subject_ -> String -> Int -> RawNodeKey
+raw subject userId index = RawNodeKey { subject, userId, index }
+-}
 
 
 infixl 6 make as <^>
@@ -94,36 +101,28 @@ makeUnsafe :: forall subj sym. IsSymbol sym => K.IsSubject subj => Proxy subj ->
 makeUnsafe subj s = unsafeCoerce $ reifySymbol s \sym -> unsafeCoerce $ make subj sym
 
 
-rawify :: forall subj sym. K.IsSubject subj => IsSymbol sym => NodeKey subj sym -> RawNodeKey
-rawify = uncurry raw <<< rawify'
+toRaw :: forall subj uid. K.IsSubject subj => IsSymbol uid => NodeKey subj uid -> RawNodeKey
+toRaw (NodeKey mbIndex) =
+    RawNodeKey
+        { subject : K.reflectSubject ( Proxy :: _ subj )
+        , userId : reflectSymbol ( Proxy :: _ uid )
+        , mbIndex
+        }
 
 
-rawify' :: forall subj sym. K.IsSubject subj => IsSymbol sym => NodeKey subj sym -> K.Subject_ /\ String
-rawify' nodeKey = getSubject nodeKey /\ getId nodeKey
+uniqueId :: forall subj uid. K.IsSubject subj => IsSymbol uid => NodeKey subj uid -> String
+uniqueId = toRaw >>> uniqueIdRaw
+
+
+uniqueIdRaw :: RawNodeKey -> String
+uniqueIdRaw (RawNodeKey { subject, userId, mbIndex }) =
+    K.toString subject <> "__" <> userId <> "__" <> case mbIndex of
+        Just n -> show n
+        Nothing -> "key"
 
 
 process :: K.Ext K.Process <^> ""
 process = NodeKey Nothing
-
-
-toString :: forall subj sym. K.IsSubject subj => IsSymbol sym => NodeKey subj sym -> String
-toString nodeKey =
-    case rawify' nodeKey of
-        subj /\ id -> id <> ":" <> K.toString subj
-
-
--- reflectSymbol (Proxy :: _ sym) <> ":" <> K.toString (K.reflectSubject (Proxy :: _ subj))
-
-
-getId :: forall subj sym. IsSymbol sym => NodeKey subj sym -> String
-getId (NodeKey maybeN) = reflectSymbol (Proxy :: _ sym) <> "__" <> rawNPostfix maybeN
-    where
-        rawNPostfix (Just n) = show n
-        rawNPostfix Nothing = ""
-
-
-getSubject :: forall subj sym. K.IsSubject subj => IsSymbol sym => NodeKey subj sym -> K.Subject_
-getSubject _ = K.reflectSubject (Proxy :: _ subj)
 
 
 instance Ord (NodeKey subj sym) where
@@ -167,28 +166,29 @@ class (K.Extends parent subj, K.IsSubject parent, K.IsSubject subj, IsSymbol id)
 instance (K.Extends parent subj, K.IsSubject parent, K.IsSubject subj, IsSymbol id) => Respresents parent subj id
 
 
+instance Show RawNodeKey where
+    show (RawNodeKey { subject, userId, mbIndex }) =
+        "(" <> K.toString subject <> "::" <> show userId <> "::" <> maybe "-" show mbIndex <> ")"
+
+
 instance Eq (NodeKey subj id) where
     eq (NodeKey nA) (NodeKey nB) = nA == nB
 
 
 instance (K.IsSubject subj, IsSymbol id) => Show (NodeKey subj id) where
-    show = toString
+    show = toRaw >>> show
 
 
 instance Eq RawNodeKey where
     eq (RawNodeKey nkA) (RawNodeKey nkB) =
         (K.toString nkA.subject == K.toString nkB.subject)
-        && (nkA.id == nkB.id)
+        && (nkA.userId == nkB.userId)
+        && (nkA.mbIndex == nkB.mbIndex)
 
 
 instance Ord RawNodeKey where
     compare (RawNodeKey nkA) (RawNodeKey nkB) =
-        compare (K.toString nkA.subject) (K.toString nkB.subject) <> compare nkA.id nkB.id
-
-
-instance Show RawNodeKey where
-    show (RawNodeKey nk) =
-        K.toString nk.subject <> ":" <> nk.id
+        compare (K.toString nkA.subject) (K.toString nkB.subject) <> compare nkA.userId nkB.userId <> compare nkA.mbIndex nkB.mbIndex
 
 
 newtype HoldsNodeKey = HoldsNodeKey (forall r. (forall subj id. K.IsSubject subj => IsSymbol id => NodeKey subj id -> r) -> r)

@@ -11,9 +11,9 @@ import Data.Codec.Argonaut as CA
 import Data.Argonaut.Encode (encodeJson)
 
 import Blessed.Internal.BlessedOp (BlessedOp)
-import Blessed.Internal.BlessedSubj (Subject, Screen)
+import Blessed.Internal.BlessedSubj (Subject, Screen, class IsSubject)
 import Blessed.Internal.NodeKey (NodeKey, class Respresents)
-import Blessed.Internal.NodeKey (getId) as NodeKey
+import Blessed.Internal.NodeKey (uniqueId) as NodeKey
 import Blessed.Internal.Command (arg) as C
 import Blessed.Internal.Core (method) as C
 
@@ -254,31 +254,31 @@ deleteTop top bottom nodeId =
 
 enableMouse
     :: forall subj' id' (subj :: Subject) (id :: Symbol) state m
-     . IsSymbol id' => Respresents Screen subj id
+     . IsSubject subj' => IsSymbol id' => Respresents Screen subj id
     => Maybe (NodeKey subj' id') -> NodeKey subj id -> BlessedOp state m
 enableMouse element nodeId =
     C.method nodeId "enableMouse"
-        [ encodeJson $ NodeKey.getId <$> element
+        [ encodeJson $ NodeKey.uniqueId <$> element
         ]
 
 
 enableKeys
     :: forall subj' id' (subj :: Subject) (id :: Symbol) state m
-     . IsSymbol id' => Respresents Screen subj id
+     . IsSubject subj' => IsSymbol id' => Respresents Screen subj id
     => Maybe (NodeKey subj' id') -> NodeKey subj id -> BlessedOp state m
 enableKeys element nodeId =
     C.method nodeId "enableKeys"
-        [ encodeJson $ NodeKey.getId <$> element
+        [ encodeJson $ NodeKey.uniqueId <$> element
         ]
 
 
 enableInput
     :: forall subj' id' (subj :: Subject) (id :: Symbol) state m
-     . IsSymbol id' => Respresents Screen subj id
+     . IsSubject subj' => IsSymbol id' => Respresents Screen subj id
     => Maybe (NodeKey subj' id') -> NodeKey subj id -> BlessedOp state m
 enableInput element nodeId =
     C.method nodeId "enableInput"
-        [ encodeJson $ NodeKey.getId <$> element
+        [ encodeJson $ NodeKey.uniqueId <$> element
         ]
 
 

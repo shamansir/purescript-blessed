@@ -68,7 +68,7 @@ commandWasPerformed =
 
 
 handlerCall :: forall m. MonadEffect m => I.RawNodeKey -> I.EventId -> Array Json -> m Unit
-handlerCall (I.RawNodeKey nodeKey) (I.EventId e) args =
+handlerCall rnk@(I.RawNodeKey nodeKey) (I.EventId e) args =
     liftEffect
         $ launchAff_
         $ appendTextFile UTF8 commandsDumpPath
@@ -80,7 +80,7 @@ handlerCall (I.RawNodeKey nodeKey) (I.EventId e) args =
             { marker : "CallDump"
             , args
             , eventType : e.type, eventUID : e.uniqueId
-            , nodeId : nodeKey.id
+            , nodeId : I.uniqueIdRaw rnk
             , nodeSubj : K.toString nodeKey.subject
             }
 

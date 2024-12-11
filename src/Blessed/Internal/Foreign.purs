@@ -52,31 +52,32 @@ newtype HandlerIndex = HandlerIndex Int
 
 
 uniqueIndex :: NK.RawNodeKey -> E.EventId -> HandlerIndex -> String
-uniqueIndex (NK.RawNodeKey rawNodeKey) (E.EventId e) (HandlerIndex localIndex) = rawNodeKey.id <> "-" <> e.uniqueId <> "-" <> show localIndex
+uniqueIndex rawNodeKey (E.EventId e) (HandlerIndex localIndex) = NK.uniqueIdRaw rawNodeKey <> "-" <> e.uniqueId <> "-" <> show localIndex
 
 
 encodeHandler :: forall state. Ref state -> NK.RawNodeKey -> HandlerIndex -> I.SHandler state -> I.HandlerCallEnc
-encodeHandler stateRef (NK.RawNodeKey rawNodeKey) localIndex (I.SHandler (E.EventId e) args fn) =
+encodeHandler stateRef rnk@(NK.RawNodeKey rawNodeKey) localIndex (I.SHandler (E.EventId e) args fn) =
     I.HandlerCallEnc
         { marker : "HandlerCall"
-        , nodeId : rawNodeKey.id
+        , nodeId : I.toUniqueJsKey rnk
         , nodeSubj : K.toString rawNodeKey.subject
         , event : e.type
         , eventUniqueId : e.uniqueId
         , args
-        , index : uniqueIndex (NK.RawNodeKey rawNodeKey) (E.EventId e) localIndex -- include parent id & total index?
-        , call : fn stateRef $ NK.RawNodeKey rawNodeKey
+        , index : uniqueIndex rnk (E.EventId e) localIndex -- include parent id & total index?
+        , call : fn stateRef rnk
         }
 
+
 encodeHandlerRef :: forall state. NK.RawNodeKey -> HandlerIndex -> I.SHandler state -> I.HandlerRefEnc
-encodeHandlerRef (NK.RawNodeKey rawNodeKey) localIndex (I.SHandler (E.EventId e) _ _) =
+encodeHandlerRef rnk@(NK.RawNodeKey rawNodeKey) localIndex (I.SHandler (E.EventId e) _ _) =
     I.HandlerRefEnc
         { marker : "HandlerRef"
-        , nodeId : rawNodeKey.id
+        , nodeId : I.toUniqueJsKey rnk
         , nodeSubj : K.toString rawNodeKey.subject
         , event : e.type
         , eventUniqueId : e.uniqueId
-        , index : uniqueIndex (NK.RawNodeKey rawNodeKey) (E.EventId e) localIndex -- include parent id & total index?
+        , index : uniqueIndex rnk (E.EventId e) localIndex -- include parent id & total index?
         }
 
 
@@ -84,7 +85,7 @@ encode' :: forall state. Ref state -> Maybe NK.RawNodeKey -> I.SNode state -> I.
 encode'
     stateRef
     maybeParent
-    (I.SNode (NK.RawNodeKey rawNodeKey) sprops snodes shandlers)
+    (I.SNode rawNodeKey@(NK.RawNodeKey rnk) sprops snodes shandlers)
 
     =
     -- BlessedEnc (CA.encode CA.null unit /\ [ HandlerEnc { nodeId : "test", event: "test", index : -1, call: const $ Console.log "foo" }])
@@ -99,11 +100,11 @@ encode'
 
         encodeHandler' :: HandlerIndex -> I.SHandler state -> I.HandlerCallEnc
         encodeHandler' =
-            encodeHandler stateRef $ NK.RawNodeKey rawNodeKey
+            encodeHandler stateRef rawNodeKey
 
         encodeHandlerRef' :: HandlerIndex -> I.SHandler state -> I.HandlerRefEnc
         encodeHandlerRef' =
-            encodeHandlerRef $ NK.RawNodeKey rawNodeKey
+            encodeHandlerRef rawNodeKey
 
         (storedHandlers :: Array I.HandlerRefEnc) /\ (handlersCalls :: Array I.HandlerCallEnc)
             = foldrWithIndex
@@ -122,17 +123,17 @@ encode'
                     (child : allChildren) /\ (itsHandlers <> allHandlers)
                 )
                 ([] /\ [])
-                (encode' stateRef (Just $ NK.RawNodeKey rawNodeKey) <$> snodes)
+                (encode' stateRef (Just rawNodeKey) <$> snodes)
 
         (nodeEncoded :: I.NodeEnc) /\ (childrenHandlers :: Array I.HandlerCallEnc) =
             I.NodeEnc
                 { marker : "Node"
-                , nodeId : rawNodeKey.id
-                , nodeSubj : K.toString rawNodeKey.subject
+                , nodeId : I.toUniqueJsKey rawNodeKey
+                , nodeSubj : K.toString rnk.subject
                 , props : adaptProps sprops
                 , children : children
                 , handlers : storedHandlers
-                , parent : _.id <$> unwrap <$> maybeParent
+                , parent : I.toUniqueJsKey <$> maybeParent
                 }
             /\ innerHandlersCalls
 

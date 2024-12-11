@@ -53,6 +53,16 @@ unwrapProp ∷ SProp → String /\ Json
 unwrapProp (SProp name json) = name /\ json
 
 
+toUniqueJsKey :: NK.RawNodeKey -> JsNodeUniqueKey
+toUniqueJsKey = NK.uniqueIdRaw >>> JsNodeUniqueKey
+
+
+newtype JsNodeUniqueKey = JsNodeUniqueKey String
+
+
+derive instance Newtype JsNodeUniqueKey _
+
+
 {-
 data NodeId_ (x :: Subject) (sym :: Symbol)
 
@@ -68,7 +78,7 @@ reflectNodeId _ = NodeId ((_ :: x) /\ reflectSymbol (Proxy :: _ sym))
 newtype HandlerCallEnc =
     HandlerCallEnc
         { marker :: String
-        , nodeId :: String
+        , nodeId :: JsNodeUniqueKey
         , nodeSubj :: String
         , event :: String
         , eventUniqueId :: String
@@ -80,7 +90,7 @@ newtype HandlerCallEnc =
 newtype HandlerRefEnc =
     HandlerRefEnc
         { marker :: String
-        , nodeId :: String
+        , nodeId :: JsNodeUniqueKey
         , nodeSubj :: String
         , event :: String
         , eventUniqueId :: String
@@ -106,11 +116,11 @@ newtype NodeEnc =
     NodeEnc
         { marker :: String
         , nodeSubj :: String
-        , nodeId :: String
+        , nodeId :: JsNodeUniqueKey
         , props :: Array PropJson
         , children :: Array NodeEnc
         , handlers :: Array HandlerRefEnc
-        , parent :: Maybe String
+        , parent :: Maybe JsNodeUniqueKey
         }
 
 derive instance Newtype NodeEnc _

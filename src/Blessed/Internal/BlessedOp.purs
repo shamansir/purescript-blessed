@@ -281,13 +281,13 @@ runFreeM stateRef fn = do
 
         go (PerformOnProcess cmd next) = do
             when dumpEnabled $ Dump.commandToPerform cmd
-            _ <- liftEffect $ callForeignCommand (I.rawify I.process) cmd
+            _ <- liftEffect $ callForeignCommand (I.toRaw I.process) cmd
             when dumpEnabled $ Dump.commandWasPerformed cmd
             pure next
 
         getUserState = liftEffect $ Ref.read stateRef
         writeUserState _ nextState = liftEffect $ Ref.modify_ (const nextState) stateRef
-        callForeignCommand target = Foreign.encodeCommand >>> uncurry (callCommandEx_ target)
+        callForeignCommand target = Foreign.encodeCommand >>> uncurry (callCommandEx_ $ I.toUniqueJsKey target)
             -- FIXME: always calls `CallCommandEx_` now, add some flag to easily distinguish if we really need it
             -- case Foreign.encodeCommand cmd of
             --     cmd_ /\ [] -> callCommand_ target cmd_
@@ -327,4 +327,4 @@ imapState toStateB toStateA = case _ of
 
 foreign import execute_ :: I.BlessedEnc -> Effect Unit
 foreign import registerNode_ :: I.NodeEnc -> Effect Unit
-foreign import callCommandEx_ :: I.RawNodeKey -> I.CommandEnc -> Array I.HandlerCallEnc -> Effect Json
+foreign import callCommandEx_ :: I.JsNodeUniqueKey -> I.CommandEnc -> Array I.HandlerCallEnc -> Effect Json

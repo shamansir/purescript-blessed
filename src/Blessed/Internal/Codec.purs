@@ -39,6 +39,10 @@ subject_  =
     CA.prismaticCodec "Kind" K.fromString K.toString CA.string
 
 
+nodeUniqueKey :: CA.JsonCodec I.JsNodeUniqueKey
+nodeUniqueKey = wrapIso I.JsNodeUniqueKey CA.string
+
+
 propJson :: CA.JsonCodec I.PropJson
 propJson =
     CA.object "SoleOption"
@@ -55,11 +59,11 @@ nodeEnc =
         wrapIso I.NodeEnc $ CAR.object "Node"
             { marker : CA.string
             , nodeSubj : CA.string
-            , nodeId : CA.string
+            , nodeId : nodeUniqueKey
             , props : CA.array propJson
             , children : CA.array codec
             , handlers : CA.array handlerRefEnc
-            , parent : CAC.maybe CA.string
+            , parent : CAC.maybe nodeUniqueKey
             }
 
 
@@ -68,7 +72,7 @@ handlerRefEnc =
     wrapIso I.HandlerRefEnc $ CA.object "HandlerRef"
         (CAR.record
             { marker : CA.string
-            , nodeId : CA.string
+            , nodeId : nodeUniqueKey
             , nodeSubj : CA.string
             , event : CA.string
             , eventUniqueId : CA.string
