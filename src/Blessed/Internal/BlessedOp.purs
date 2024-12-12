@@ -222,8 +222,8 @@ runM
     => state
     -> BlessedOpM state m
     ~> m
-runM state blessedFree =
-    liftEffect (Ref.new state) >>= \stateRef -> runM' stateRef blessedFree -- flip?
+runM state blessedM =
+    liftEffect (Ref.new state) >>= \stateRef -> runM' stateRef blessedM -- flip?
 
 
 runM'
@@ -298,6 +298,14 @@ runFreeM stateRef fn = do
             -- should be set to the according one this way
 
 
+runOn :: forall s s' m a. MonadRec m => MonadEffect m => s -> BlessedOpM s m a -> BlessedOpM s' m a
+runOn s = lift' <<< runM s
+
+
+runOnUnit :: forall s m a. MonadRec m => MonadEffect m => BlessedOpM Unit m a -> BlessedOpM s m a
+runOnUnit = runOn unit
+
+
 makeHandler :: forall state subj sym. I.NodeKey subj sym -> E.EventId -> Array Json -> (I.NodeKey subj sym -> I.EventJson -> BlessedOp state Effect) -> I.SHandler state
 makeHandler nodeKey eventId arguments op =
     I.SHandler eventId arguments
@@ -307,8 +315,8 @@ makeHandler nodeKey eventId arguments op =
             runM' stateRef $ op nodeKey evtJson
 
 
-imapState :: forall stateA stateB m a. MonadEffect m => (stateA -> stateB) -> (stateB -> stateA) -> BlessedOpF stateA m a -> BlessedOpF stateB m (m a)
-imapState toStateB toStateA = case _ of
+imapStateF :: forall stateA stateB m a. MonadEffect m => (stateA -> stateB) -> (stateB -> stateA) -> BlessedOpF stateA m a -> BlessedOpF stateB m (m a)
+imapStateF toStateB toStateA = case _ of
     GetStateRef k -> GetStateRef $ \refB -> liftEffect $ Ref.read refB >>= (toStateA >>> Ref.new) >>= (k >>> pure)
     State k -> State \stateB -> bimap pure toStateB $ k $ toStateA stateB
     Lift m -> Lift $ pure m
@@ -316,6 +324,7 @@ imapState toStateB toStateA = case _ of
     PerformSome nid cmds a -> PerformSome nid cmds $ pure a
     PerformGet nid getCmd k -> PerformGet nid getCmd (k >>> pure)
     PerformOnProcess cmd a -> PerformOnProcess cmd $ pure a
+
 
 
 -- TODO: To/FromRepr + imapState
