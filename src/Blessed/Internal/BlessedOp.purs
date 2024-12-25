@@ -22,6 +22,7 @@ import Data.Foldable (sequence_)
 import Data.Traversable (traverse, traverse_)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Tuple (uncurry)
+import Data.Tuple (snd) as Tuple
 import Data.Array as Array
 
 import Data.Codec.Argonaut (JsonCodec, JsonDecodeError(..), decode, printJsonDecodeError) as CA
@@ -226,6 +227,7 @@ runM state blessedM =
     liftEffect (Ref.new state) >>= \stateRef -> runM' stateRef blessedM -- flip?
 
 
+
 runM'
     :: forall state m
      . MonadEffect m
@@ -297,6 +299,30 @@ runFreeM stateRef fn = do
             --      if (command.marker == 'CallCommandEx') {
             -- should be set to the according one this way
 
+runAndGet
+    :: forall state m a
+     . MonadEffect m
+    => MonadRec m
+    => state
+    -> BlessedOpM state m a
+    -> m (a /\ state)
+runAndGet state blessedM = do
+    stateRef <- liftEffect $ Ref.new state
+    a <- runM' stateRef blessedM
+    sAfter <- liftEffect $ Ref.read stateRef
+    pure $ a /\ sAfter
+
+
+runAndGet'
+    :: forall state m
+     . MonadEffect m
+    => MonadRec m
+    => state
+    -> BlessedOpM state m Unit
+    -> m state
+runAndGet' state blessedM = do
+    runAndGet state blessedM <#> Tuple.snd
+
 
 runOn :: forall s s' m a. MonadRec m => MonadEffect m => s -> BlessedOpM s m a -> BlessedOpM s' m a
 runOn s = lift' <<< runM s
@@ -304,6 +330,14 @@ runOn s = lift' <<< runM s
 
 runOnUnit :: forall s m a. MonadRec m => MonadEffect m => BlessedOpM Unit m a -> BlessedOpM s m a
 runOnUnit = runOn unit
+
+
+runOver :: forall s s' m a. MonadState s m => MonadRec m => MonadEffect m => s -> BlessedOpM s m a -> BlessedOpM s' m (a /\ s)
+runOver s op = lift' $ runAndGet s op
+
+
+runOver' :: forall s s' m. MonadState s m => MonadRec m => MonadEffect m => s -> BlessedOpM s m Unit -> BlessedOpM s' m s
+runOver' s op = lift' $ runAndGet' s op
 
 
 makeHandler :: forall state subj sym. I.NodeKey subj sym -> E.EventId -> Array Json -> (I.NodeKey subj sym -> I.EventJson -> BlessedOp state Effect) -> I.SHandler state
