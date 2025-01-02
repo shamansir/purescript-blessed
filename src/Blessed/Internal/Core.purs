@@ -48,7 +48,7 @@ import Blessed.Internal.Foreign (encode, encode', encodeHandler, encodeHandlerRe
 
 -- TODO: these function types make reading the code and finding proper things to fit complex, try to get rid of them in the end
 type InitFn subj id state = (NodeKey subj id -> Op.BlessedOp state Effect)
-type HandlerFn subj id state = (NodeKey subj id -> I.EventJson -> Op.BlessedOp state Effect)
+type HandlerFn subj id state = (NodeKey subj id -> I.EventJson -> Op.BlessedOpM state Effect Boolean)
 
 
 data Attribute :: K.Subject -> Symbol -> Row Type -> Type -> Type -> Type
@@ -251,6 +251,7 @@ cmethod nodeKey name jsonArgs handlers =
     Op.getStateRef >>= \stateRef ->
         let
             rawNodeKey = NK.toRaw nodeKey
+            encodeHandler :: Int -> (e /\ HandlerFn subj id state) -> _
             encodeHandler index (event /\ op) =
                 case E.split event of
                     eventId /\ arguments ->
@@ -319,7 +320,7 @@ node nodeKey attrs children =
 
 nodeAnd :: forall subj id state r e. K.IsSubject subj => IsSymbol id => E.Events e => Proxy e -> NodeKey subj id -> NodeAnd subj id state r
 nodeAnd _ nodeKey attrs children fn =
-    I.SNode (NK.toRaw nodeKey) sprops children (Op.makeHandler nodeKey initialId initalArgs (\id _ -> fn id) : handlers)
+    I.SNode (NK.toRaw nodeKey) sprops children (Op.makeHandler nodeKey initialId initalArgs (\id _ -> fn id *> pure true) : handlers)
     where
         sprops /\ handlers = splitAttributes attrs
         initialId /\ initalArgs = E.split (E.initial :: e)

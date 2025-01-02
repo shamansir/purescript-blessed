@@ -37,7 +37,7 @@ derive newtype instance EncodeJson EventJson
 
 -- encode state to Json as well?
 data SProp = SProp String Json
-data SHandler s = SHandler E.EventId (Array Json) (Ref s -> NK.RawNodeKey -> EventJson -> Effect Unit)
+data SHandler s = SHandler E.EventId (Array Json) (Ref s -> NK.RawNodeKey -> EventJson -> Effect Boolean)
 data SNode s = SNode NK.RawNodeKey (Array SProp) (Array (SNode s)) (Array (SHandler s))
 
 
@@ -84,7 +84,7 @@ newtype HandlerCallEnc =
         , eventUniqueId :: String
         , index :: String
         , args :: Array Json
-        , call :: EventJson -> Effect Unit
+        , call :: EventJson -> Effect Boolean
         }
 
 newtype HandlerRefEnc =
