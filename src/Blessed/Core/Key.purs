@@ -31,6 +31,10 @@ enter :: Key
 enter = Key "enter"
 
 
+tab :: Key
+tab = Key "tab"
+
+
 control :: Key -> Key
 control (Key m) = Key $ "C-" <> m
 
