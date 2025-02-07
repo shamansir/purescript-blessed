@@ -10,23 +10,21 @@ import * as util from 'util';
 
 // console.log(blessed);
 
-let registry;
-let handlersFns;
+let config =
+    { blessedOn : true
+    , loggingTo : null // null | false | 'console' | <file-path>
+    };
 
-const BLESSED_ON = true;
-const LOG_ON = !BLESSED_ON;
-const LOG_TO_FILE_ON = false;
-const LOG_FILE_PATH = './blessed_op_log.txt';
-const logFile = fs.createWriteStream(LOG_FILE_PATH, { flags: 'a' });
-
+let logFile = null;
 
 function ___log() {
-    if (LOG_ON) {;
+    if (config.loggingTo && config.loggingTo === 'console') {;
         // to be able to disable logs at once
         console.log.apply(this, arguments);
-    }
-
-    if (LOG_TO_FILE_ON) {
+    } else if (config.loggingTo) {
+        if (!logFile) {
+            logFile = fs.createWriteStream(logFile, { flags: 'a' });
+        }
         logFile.write(util.format.apply(null, arguments) + '\n');
         /*
         fs.appendFileSync(LOG_FILE, Array.prototype.join.call(arguments, ' | '), err => {
@@ -39,6 +37,9 @@ function ___log() {
 }
 
 const INIT_HANDLER_KEY = 'init';
+
+let registry;
+let handlersFns;
 
 // FIXME: move more logic to PureScript and for JS it should be just simple functions
 
@@ -104,7 +105,7 @@ function bindHandler(blessedObj, handler) {
     const handlerFn = handlersFns[handler.index];
 
     ___log('registering handler', handler.index, handler, handlerFn);
-    if (BLESSED_ON && handlerFn && (handlerFn.index === handler.index)) {
+    if (config.blessedOn && handlerFn && (handlerFn.index === handler.index)) {
         if (handler.event === 'key') {
             blessedObj.key(handlerFn.args, (evt) => handlerFn.call(evt)());
         } else {
@@ -128,131 +129,131 @@ function registerNode(node) {
         switch (node.nodeSubj) {
             // FIXME just call blessed[node.nodeSubj](props)]
             case 'node':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.node(props);
                 break;
             case 'screen':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.screen(props);
                 break;
             case 'element':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.element(props);
                 break;
             case 'box':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.box(props);
                 break;
             case 'text':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.text(props);
                 break;
             case 'line':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.line(props);
                 break;
             case 'bigtext':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.bigtext(props);
                 break;
             case 'list':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.list(props);
                 break;
             case 'filemanager':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.filemanager(props);
                 break;
             case 'listtable':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.listtable(props);
                 break;
             case 'listbar':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.listbar(props);
                 break;
             case 'form':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.form(props);
                 break;
             case 'input':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.input(props);
                 break;
             case 'textarea':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.textarea(props);
                 break;
             case 'textbox':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.textbox(props);
                 break;
             case 'button':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.button(props);
                 break;
             case 'checkbox':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.checkbox(props);
                 break;
             case 'radioset':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.radioset(props);
                 break;
             case 'radiobutton':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.radiobutton(props);
                 break;
             case 'prompt':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.prompt(props);
                 break;
             case 'question':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.question(props);
                 break;
             case 'message':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.message(props);
                 break;
             case 'loading':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.loading(props);
                 break;
             case 'progressbar':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.progressbar(props);
                 break;
             case 'log':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.log(props);
                 break;
             case 'table':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.table(props);
                 break;
             case 'terminal':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.terminal(props);
                 break;
             case 'image':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.image(props);
                 break;
             case 'ansiimage':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.ansiimage(props);
                 break;
             case 'overlayimage':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.overlayimage(props);
                 break;
             case 'video':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.video(props);
                 break;
             case 'layout':
-                if (!BLESSED_ON) break;
+                if (!config.blessedOn) break;
                 blessedObj = blessed.layout(props);
                 break;
 
@@ -289,7 +290,7 @@ function callCommand(rawNodeKey) {
             ___log('call', nodeId, command);
             let returnObj = null;
 
-            if (BLESSED_ON) {
+            if (config.blessedOn) {
                 if (command.type === 'process') {
                     process[command.method].apply(this, command.args);
                 } else {
@@ -447,6 +448,14 @@ function adaptListBarCommandValue(hs) {
     }
 }
 
+function configureBlessedJs(cfg) {
+    return function() {
+        config.blessedOn = cfg.blessedOn;
+        config.loggingTo = cfg.loggingTo;
+    }
+}
+
 export const execute_ = execute;
 export const registerNode_ = registerNode;
 export const callCommandEx_ = callCommandEx;
+export const configureBlessedJs_ = configureBlessedJs;

@@ -200,6 +200,13 @@ newtype CommandEnc =
     CommandEnc Json
 
 
+newtype ConfigEnc =
+    ConfigEnc
+        { blessedOn :: Boolean
+        , loggingTo :: Json
+        }
+
+
 derive instance Newtype CallCommandEnc _
 derive instance Newtype GetCommandEnc _
 derive instance Newtype SetCommandEnc _
@@ -208,3 +215,4 @@ derive instance Newtype SetPCommandEnc _
 derive instance Newtype SubCommandEnc _
 derive instance Newtype ProcessCommandEnc _
 derive instance Newtype CommandEnc _
+derive instance Newtype ConfigEnc _

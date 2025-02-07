@@ -13,41 +13,32 @@ import Effect.Ref as Ref
 import Effect.Exception (Error)
 import Effect.Exception as Error
 
-import Control.Monad.State as State
-
-import Data.Bifunctor (lmap, rmap, bimap)
-import Data.Either (Either)
+import Data.Bifunctor (lmap, bimap)
 import Data.Either as Either
-import Data.Foldable (sequence_)
 import Data.Traversable (traverse, traverse_)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Tuple (uncurry)
 import Data.Tuple (snd) as Tuple
-import Data.Array as Array
 
-import Data.Codec.Argonaut (JsonCodec, JsonDecodeError(..), decode, printJsonDecodeError) as CA
-import Data.Argonaut.Core (Json)
-import Data.Argonaut.Core (stringify) as Json
+import Data.Codec.Argonaut (JsonCodec, JsonDecodeError, decode, printJsonDecodeError) as CA
+import Data.Argonaut.Core (Json, jsonNull)
+import Data.Argonaut.Core (fromString) as Json
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode (class EncodeJson)
 
 import Control.Monad.Error.Class (class MonadThrow, throwError)
 import Control.Monad.Free (Free)
 import Control.Monad.Free as Free
 import Control.Monad.Rec.Class (class MonadRec, tailRecM, Step(..))
 import Control.Monad.State.Class (class MonadState)
-import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 
-import Blessed.Internal.Foreign (encodeCommand, commandToJson) as Foreign
+import Blessed.Internal.Foreign (encodeCommand) as Foreign
 import Blessed.Internal.Command (Command) as I
-import Blessed.Internal.Command as Cmd
-import Blessed.Internal.NodeKey as I
+import Blessed.Internal.NodeKey (NodeKey, RawNodeKey, process, toRaw)  as I
 import Blessed.Internal.JsApi as I
 import Blessed.Internal.Dump as Dump
-import Blessed.Internal.BlessedSubj as K
 import Blessed.Internal.ArgonautCodecExtra as ACX
 import Blessed.Internal.Emitter as E
-
 
 
 data BlessedOpF state m a
@@ -58,6 +49,7 @@ data BlessedOpF state m a
     | PerformSome I.RawNodeKey (Array I.Command) a
     | PerformGet I.RawNodeKey I.Command (Json -> a)
     | PerformOnProcess I.Command a
+    | ConfigureJs BlessedJsConfig a
 
 
 instance functorBlessedOpF :: Functor m => Functor (BlessedOpF state m) where
@@ -69,6 +61,7 @@ instance functorBlessedOpF :: Functor m => Functor (BlessedOpF state m) where
         PerformSome nid cmds a -> PerformSome nid cmds $ f a
         PerformGet nid getCmd k -> PerformGet nid getCmd $ map f k
         PerformOnProcess cmd a -> PerformOnProcess cmd $ f a
+        ConfigureJs cfg a -> ConfigureJs cfg $ f a
 
 
 type BlessedOp state m = BlessedOpM state m Unit
@@ -173,6 +166,14 @@ performSome nid cmds = BlessedOpM $ Free.liftF $ PerformSome nid cmds unit
 
 performOnProcess :: forall state m. I.Command -> BlessedOp state m
 performOnProcess cmd = BlessedOpM $ Free.liftF $ PerformOnProcess cmd unit
+
+
+configureJs :: forall state m. BlessedJsConfig -> BlessedOp state m
+configureJs cfg = BlessedOpM $ Free.liftF $ ConfigureJs cfg unit
+
+
+configureJs' :: BlessedJsConfig -> Effect Unit
+configureJs' = configureBlessedJs_ <<< _adaptConfigRec
 
 
 -- type Performer m = I.Command -> m Unit -- TODO: return m (Maybe Json), for getters
@@ -287,6 +288,10 @@ runFreeM stateRef fn = do
             when dumpEnabled $ Dump.commandWasPerformed cmd
             pure next
 
+        go (ConfigureJs cfg next) = do
+            _ <- liftEffect $ configureJs' cfg
+            pure next
+
         getUserState = liftEffect $ Ref.read stateRef
         writeUserState _ nextState = liftEffect $ Ref.modify_ (const nextState) stateRef
         callForeignCommand target = Foreign.encodeCommand >>> uncurry (callCommandEx_ $ I.toUniqueJsKey target)
@@ -362,6 +367,7 @@ imapStateF toStateB toStateA = case _ of
     PerformSome nid cmds a -> PerformSome nid cmds $ pure a
     PerformGet nid getCmd k -> PerformGet nid getCmd (k >>> pure)
     PerformOnProcess cmd a -> PerformOnProcess cmd $ pure a
+    ConfigureJs config a -> ConfigureJs config $ pure a
 
 
 
@@ -372,6 +378,29 @@ imapStateF toStateB toStateA = case _ of
 -- imapStateM atob btoa (BlessedOpM free) = BlessedOpM $ Free.liftF $ imapState atob btoa $ ?wh free
 
 
+data LoggingTarget
+    = LoggingOff
+    | Console
+    | File String
+
+
+type BlessedJsConfig =
+    { blessedOn :: Boolean
+    , loggingTo :: LoggingTarget
+    }
+
+
+_adaptConfigRec :: BlessedJsConfig -> I.ConfigEnc
+_adaptConfigRec { blessedOn, loggingTo } =
+    I.ConfigEnc { blessedOn, loggingTo :
+        case loggingTo of
+            LoggingOff -> jsonNull
+            Console -> Json.fromString "console"
+            File fileName -> Json.fromString fileName
+        }
+
+
 foreign import execute_ :: I.BlessedEnc -> Effect Unit
 foreign import registerNode_ :: I.NodeEnc -> Effect Unit
 foreign import callCommandEx_ :: I.JsNodeUniqueKey -> I.CommandEnc -> Array I.HandlerCallEnc -> Effect Json
+foreign import configureBlessedJs_ :: I.ConfigEnc -> Effect Unit
