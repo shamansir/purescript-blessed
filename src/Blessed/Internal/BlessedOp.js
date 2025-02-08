@@ -24,6 +24,11 @@ const INIT_HANDLER_KEY = 'init';
 let registry;
 let handlersFns;
 
+if (typeof blessed === 'undefined' || blessed === null) {
+    console.error('chjj/BLESSED library is not installed');
+    ___log_bl('chjj/BLESSED library is not installed');
+}
+
 // FIXME: move more logic to PureScript and for JS it should be just simple functions
 
 function buildRecord(array, fn) {
