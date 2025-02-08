@@ -11,16 +11,17 @@ import Blessed ((>~))
 import Blessed as B
 import Blessed (run, exit) as Blessed
 
-import Blessed.Internal.Core as Core
+import Blessed.Internal.Core (Blessed, on) as Core
 import Blessed.Internal.BlessedSubj (Screen, Box)
 import Blessed.Internal.NodeKey (nk, type (<^>))
+import Blessed.Internal.BlessedOp (configureJs', BlessedJsConfig, LoggingTarget(..))
 
 import Blessed.Core.Key (alpha, control, escape, enter) as Key
 import Blessed.Core.Dimension (percents) as Dimension
 import Blessed.Core.Offset (center) as Offset
-import Blessed.Core.Border (type_, _line, fg, bg) as Border
+import Blessed.Core.Border (type_, _line, fg) as Border
 import Blessed.Core.Style (fg, bg, border, hover) as Style
-import Blessed.Core.EndStyle as ES
+import Blessed.Core.EndStyle (bg) as ES
 
 import Blessed.UI.Base.Screen.Event (key) as Screen
 import Blessed.UI.Base.Screen.Method (render) as Screen
@@ -40,6 +41,8 @@ theBox = nk :: Box <^> "demo-box"
 
 main :: Effect Unit
 main = demo
+-- Uncomment to enable logging:
+-- main = configureJs' logEverythingConfig *> demo
 
 
 demo :: Effect Unit
@@ -97,3 +100,11 @@ box =
             mainScreen >~ Screen.render
         ]
         []
+
+
+logEverythingConfig :: BlessedJsConfig
+logEverythingConfig =
+    { blessedOn : true
+    , loggingBlessedTo  : File "./blessed.log.txt"
+    , loggingCommandsTo : File "./commands.log.txt"
+    }
