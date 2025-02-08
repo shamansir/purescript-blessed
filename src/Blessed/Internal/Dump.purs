@@ -32,10 +32,6 @@ import Blessed.Internal.Foreign as Foreign
 
 
 
-commandsDumpPath :: FilePath
-commandsDumpPath = "./commands_dump.txt"
-
-
 newtype CallDump =
     CallDump
         { marker :: String
@@ -50,48 +46,61 @@ newtype CallDump =
 derive instance Newtype CallDump _
 
 
+class Dump a where
+    dump :: a -> String
+
+
+instance Dump I.Command where
+    dump =
+        cmdTupleToLine
+        <<< bimap Json.stringify (Array.length >>> show)
+        <<< Foreign.commandToJson
+        where
+            cmdTupleToLine (callDump /\ handlersCountStr) = callDump <> " (" <> handlersCountStr <> ")"
+
+
+instance Dump CallDump where
+    dump (CallDump cd) =
+        cd.nodeSubj <> "::" <> cd.nodeId <> " " <> "{" <> cd.marker <> "}" <> " " <> cd.eventType <> " " <> cd.eventUID <> " " <> Json.stringify (CA.encode (CA.array CA.json) cd.args)
+
+
+{-
+dumpToFile :: forall m a. MonadEffect m => Dump a => a -> m Unit
+dumpToFile =
+    liftEffect
+        <<< launchAff_
+        <<< appendTextFile UTF8 commandsDumpPath
+        <<< (<>) "\n"
+        <<< dump
+
+
 commandToPerform :: forall m. MonadEffect m => I.Command -> m Unit
 commandToPerform =
     commandWasPerformed
 
 
 commandWasPerformed :: forall m. MonadEffect m => I.Command -> m Unit
-commandWasPerformed =
-    liftEffect
-        <<< launchAff_
-        <<< appendTextFile UTF8 commandsDumpPath
-        <<< cmdTupleToLine
-        <<< bimap Json.stringify (Array.length >>> show)
-        <<< Foreign.commandToJson
-    where
-        cmdTupleToLine (callDump /\ handlersCountStr) = callDump <> " (" <> handlersCountStr <> ")" <> "\n"
+commandWasPerformed = dumpToFile
 
 
 handlerCall :: forall m. MonadEffect m => I.RawNodeKey -> I.EventId -> Array Json -> m Unit
-handlerCall rnk@(I.RawNodeKey nodeKey) (I.EventId e) args =
-    liftEffect
-        $ launchAff_
-        $ appendTextFile UTF8 commandsDumpPath
-        $ (<>) "\n"
-        -- $ Json.stringify
-        -- $ encode
-        $ encodePretty
-        $ CallDump
-            { marker : "CallDump"
-            , args
-            , eventType : e.type, eventUID : e.uniqueId
-            , nodeId : I.uniqueIdRaw rnk
-            , nodeSubj : K.toString nodeKey.subject
-            }
+handlerCall rnk eventId = dumpToFile <<< toCallDump rnk eventId
+-}
 
 
 encode :: CallDump -> Json
 encode = CA.encode codec -- TODO: prettify
 
 
-encodePretty :: CallDump -> String
-encodePretty (CallDump cd) =
-    cd.nodeSubj <> "::" <> cd.nodeId <> " " <> "{" <> cd.marker <> "}" <> " " <> cd.eventType <> " " <> cd.eventUID <> " " <> Json.stringify (CA.encode (CA.array CA.json) cd.args)
+toCallDump :: I.RawNodeKey -> I.EventId -> Array Json -> CallDump
+toCallDump rnk@(I.RawNodeKey nodeKey) (I.EventId e) args =
+    CallDump
+        { marker : "CallDump"
+        , args
+        , eventType : e.type, eventUID : e.uniqueId
+        , nodeId : I.uniqueIdRaw rnk
+        , nodeSubj : K.toString nodeKey.subject
+        }
 
 
 codec :: CA.JsonCodec CallDump

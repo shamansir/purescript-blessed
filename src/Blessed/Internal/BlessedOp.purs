@@ -173,14 +173,10 @@ configureJs cfg = BlessedOpM $ Free.liftF $ ConfigureJs cfg unit
 
 
 configureJs' :: BlessedJsConfig -> Effect Unit
-configureJs' = configureBlessedJs_ <<< _adaptConfigRec
+configureJs' = configureBlessedAndLogging_ <<< _adaptConfigRec
 
 
 -- type Performer m = I.Command -> m Unit -- TODO: return m (Maybe Json), for getters
-
-
-dumpEnabled :: Boolean
-dumpEnabled = false
 
 
 lift :: forall state m. m Unit -> BlessedOpM state m Unit
@@ -265,33 +261,35 @@ runFreeM stateRef fn = do
         go (Lift m) = m
 
         go (PerformOne target cmd next) = do
-            when dumpEnabled $ Dump.commandToPerform cmd
+            logCommandToPerform cmd
             _ <- liftEffect $ callForeignCommand target cmd
-            when dumpEnabled $ Dump.commandWasPerformed cmd
+            logCommandWasPerformed cmd
             pure next
 
         go (PerformSome target cmds next) = do
-            when dumpEnabled $ traverse_ Dump.commandToPerform cmds
+            traverse_ logCommandToPerform cmds
             _ <- traverse (liftEffect <<< callForeignCommand target) cmds
-            when dumpEnabled $ traverse_ Dump.commandWasPerformed cmds
+            traverse_ logCommandWasPerformed cmds
             pure next
 
         go (PerformGet target cmd getV) = do
-            when dumpEnabled $ Dump.commandToPerform cmd
+            logCommandToPerform cmd
             value <- liftEffect $ callForeignCommand target cmd
-            when dumpEnabled $ Dump.commandWasPerformed cmd
+            logCommandWasPerformed cmd
             pure $ getV value
 
         go (PerformOnProcess cmd next) = do
-            when dumpEnabled $ Dump.commandToPerform cmd
+            logCommandToPerform cmd
             _ <- liftEffect $ callForeignCommand (I.toRaw I.process) cmd
-            when dumpEnabled $ Dump.commandWasPerformed cmd
+            logCommandWasPerformed cmd
             pure next
 
         go (ConfigureJs cfg next) = do
             _ <- liftEffect $ configureJs' cfg
             pure next
 
+        logCommandToPerform    cmd = liftEffect $ logCommandWhenEnabled_ $ \_ -> "before :: " <> Dump.dump cmd
+        logCommandWasPerformed cmd = liftEffect $ logCommandWhenEnabled_ $ \_ -> "after  :: " <> Dump.dump cmd
         getUserState = liftEffect $ Ref.read stateRef
         writeUserState _ nextState = liftEffect $ Ref.modify_ (const nextState) stateRef
         callForeignCommand target = Foreign.encodeCommand >>> uncurry (callCommandEx_ $ I.toUniqueJsKey target)
@@ -354,7 +352,7 @@ makeHandler nodeKey eventId arguments op =
     I.SHandler eventId arguments
         $ \stateRef rawNodeKey evtJson -> do
             -- TODO: check IDs match?
-            when dumpEnabled $ Dump.handlerCall rawNodeKey eventId arguments
+            liftEffect $ logCommandWhenEnabled_ $ \_ -> Dump.dump $ Dump.toCallDump rawNodeKey eventId arguments
             runM' stateRef $ op nodeKey evtJson
 
 
@@ -386,21 +384,27 @@ data LoggingTarget
 
 type BlessedJsConfig =
     { blessedOn :: Boolean
-    , loggingTo :: LoggingTarget
+    , loggingBlessedTo  :: LoggingTarget
+    , loggingCommandsTo :: LoggingTarget
     }
 
 
 _adaptConfigRec :: BlessedJsConfig -> I.ConfigEnc
-_adaptConfigRec { blessedOn, loggingTo } =
-    I.ConfigEnc { blessedOn, loggingTo :
-        case loggingTo of
+_adaptConfigRec cfg =
+    I.ConfigEnc
+        { blessedOn : cfg.blessedOn
+        , loggingBlessedTo  : convertLogging cfg.loggingBlessedTo
+        , loggingCommandsTo : convertLogging cfg.loggingCommandsTo
+        }
+    where
+        convertLogging = case _ of
             LoggingOff -> jsonNull
             Console -> Json.fromString "console"
             File fileName -> Json.fromString fileName
-        }
 
 
 foreign import execute_ :: I.BlessedEnc -> Effect Unit
 foreign import registerNode_ :: I.NodeEnc -> Effect Unit
 foreign import callCommandEx_ :: I.JsNodeUniqueKey -> I.CommandEnc -> Array I.HandlerCallEnc -> Effect Json
-foreign import configureBlessedJs_ :: I.ConfigEnc -> Effect Unit
+foreign import configureBlessedAndLogging_ :: I.ConfigEnc -> Effect Unit
+foreign import logCommandWhenEnabled_ :: (Unit -> String) -> Effect Unit

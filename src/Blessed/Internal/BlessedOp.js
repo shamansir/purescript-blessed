@@ -12,29 +12,12 @@ import * as util from 'util';
 
 let config =
     { blessedOn : true
-    , loggingTo : null // null | false | 'console' | <file-path>
+    , loggingBlessedTo : null  // null | false | 'console' | <file-path>
+    , loggingCommandsTo : null // null | false | 'console' | <file-path>
     };
 
-let logFile = null;
-
-function ___log() {
-    if (config.loggingTo && config.loggingTo === 'console') {;
-        // to be able to disable logs at once
-        console.log.apply(this, arguments);
-    } else if (config.loggingTo) {
-        if (!logFile) {
-            logFile = fs.createWriteStream(logFile, { flags: 'a' });
-        }
-        logFile.write(util.format.apply(null, arguments) + '\n');
-        /*
-        fs.appendFileSync(LOG_FILE, Array.prototype.join.call(arguments, ' | '), err => {
-            if (err) {
-            console.error(err);
-            }
-            // done!
-        }); */
-    }
-}
+let blessedLogFile = null;
+let commandsLogFile = null;
 
 const INIT_HANDLER_KEY = 'init';
 
@@ -78,7 +61,7 @@ function adaptProp(hs, parentProp) {
 
 function execute(program) {
     return function() {
-        ___log('program', program);
+        ___log_bl('program', program);
         registry = {};
         handlersFns = buildRecord(program.handlersFns, (hdl) => ({ name : hdl.index, value : hdl }));
 
@@ -92,7 +75,7 @@ function performInit(handlerDef) {
         initEventIndex = handlerDef.index;
         initHandlerFn = handlersFns[initEventIndex];
 
-        ___log('calling ', initEventIndex);
+        ___log_bl('calling ', initEventIndex);
         if (initHandlerFn && (initHandlerFn.index === initEventIndex)) {
             initHandlerFn.call()();
         }
@@ -104,7 +87,7 @@ function bindHandler(blessedObj, handler) {
     if (handler.event === 'command') return;
     const handlerFn = handlersFns[handler.index];
 
-    ___log('registering handler', handler.index, handler, handlerFn);
+    ___log_bl('registering handler', handler.index, handler, handlerFn);
     if (config.blessedOn && handlerFn && (handlerFn.index === handler.index)) {
         if (handler.event === 'key') {
             blessedObj.key(handlerFn.args, (evt) => handlerFn.call(evt)());
@@ -116,13 +99,13 @@ function bindHandler(blessedObj, handler) {
 
 function registerNode(node) {
     return function() {
-        ___log('node', node);
+        ___log_bl('node', node);
 
         const handlers = buildRecord(node.handlers, (evt) => ({ name : evt.eventUniqueId, value : evt }));
         const props = buildRecord(node.props, adaptProp(handlers, null));
 
-        ___log('props', props);
-        ___log('handlers', handlers);
+        ___log_bl('props', props);
+        ___log_bl('handlers', handlers);
 
         let blessedObj = null;
 
@@ -258,11 +241,11 @@ function registerNode(node) {
                 break;
 
             default:
-              ___log(`Unknown node kind ${node.nodeSubj}.`);
+              ___log_bl(`Unknown node kind ${node.nodeSubj}.`);
         }
 
         registry[node.nodeId] = { source : node, blessed : blessedObj };
-        ___log('registered node & blessed obj at', node.nodeId);
+        ___log_bl('registered node & blessed obj at', node.nodeId);
 
         node.handlers.forEach((handler) => {
             bindHandler(blessedObj, handler);
@@ -284,10 +267,10 @@ function registerNode(node) {
 
 function callCommand(rawNodeKey) {
     return function(command) {
-        // ___log('build', nodeId, command);
+        // ___log_bl('build', nodeId, command);
         return function() {
             const nodeId = rawNodeKey;
-            ___log('call', nodeId, command);
+            ___log_bl('call', nodeId, command);
             let returnObj = null;
 
             if (config.blessedOn) {
@@ -302,7 +285,7 @@ function callCommand(rawNodeKey) {
                         switch (command.type) {
                             case 'call':
                                 if (command.marker == 'CallCommandEx') {
-                                    ___log('ex', command.method, command.args);
+                                    ___log_bl('ex', command.method, command.args);
                                     if (command.method == 'setItems') {
                                         blessedObj['setItems'].apply(blessedObj, [ adaptListBarCommands(command.args) ]);
                                     } else if (command.method == 'addItemH') {
@@ -378,8 +361,8 @@ function callCommandEx(rawNodeKey) {
     return function(command) {
         return function(handlers) {
 
-            // ___log('ccex', 'command', command);
-            ___log('ccex', 'handlers', handlers);
+            // ___log_bl('ccex', 'command', command);
+            ___log_bl('ccex', 'handlers', handlers);
 
             handlers.forEach((handler) => {
                 handlersFns[handler.index] = handler;
@@ -389,11 +372,11 @@ function callCommandEx(rawNodeKey) {
                 const commandResult = callCommand(rawNodeKey)(command)();
                 handlers.forEach((handler) => {
                     const blessedObj = registry[handler.nodeId] ? registry[handler.nodeId].blessed : null;
-                    ___log(handler.nodeId, handler.event, handler.index, blessedObj ? 'blessedObj found' : 'blessedObj not found');
+                    ___log_bl(handler.nodeId, handler.event, handler.index, blessedObj ? 'blessedObj found' : 'blessedObj not found');
                     // FIXME: for links, blessed is not found, also node ID is improper for the newly created nodes, but ok for newly created links
-                    // ___log('ccex', 'bindHandler before', handler.nodeId, registry[handler.nodeId], handlersFns[handler.index]);
+                    // ___log_bl('ccex', 'bindHandler before', handler.nodeId, registry[handler.nodeId], handlersFns[handler.index]);
                     if (blessedObj) {
-                        // ___log('ccex', 'bindHandler after', handler.nodeId, handler);
+                        // ___log_bl('ccex', 'bindHandler after', handler.nodeId, handler);
                         bindHandler(blessedObj, handler);
                     }
                 });
@@ -407,9 +390,9 @@ function adaptListBarCommands(lbItems) {
     const cmdsData = lbItems[0].map((v) => v[1]); // the hack to get rid of `jsonCmd` label that is added to make Argonaut properly encode
     const handlersRefs = lbItems.slice(1);
     const handlersRefsRec = buildRecord(handlersRefs, (h) => ({ name : h.eventUniqueId, value : h }));
-    // ___log(cmdsData, handlersRefsRec);
+    // ___log_bl(cmdsData, handlersRefsRec);
     if (cmdsData.length != handlersRefs.length) {
-        ___log('list bar commands and refs are unueqal in size');
+        ___log_bl('list bar commands and refs are unueqal in size');
         return [];
     }
     const commands = buildRecord(cmdsData, (cmd, index) => {
@@ -429,33 +412,63 @@ function adaptListBarSingleCommand(lbItems) {
 
 function adaptListBarCommandValue(hs) {
     return function(cmd, idx) {
-        ___log('command', cmd);
+        ___log_bl('command', cmd);
         const localHandlerId = cmd.eventUID;
         const handlerRef = hs[localHandlerId];
         if (handlerRef) {
             const handlerIndex = handlerRef.index;
             const handlerFn = handlersFns[handlerIndex];
             if (handlerFn) {
-                ___log('command handler', localHandlerId, handlerIndex, handlerFn);
+                ___log_bl('command handler', localHandlerId, handlerIndex, handlerFn);
                 return { name : cmd.command, value : { keys : cmd.keys, callback : (evt) => handlerFn.call(evt)() } };
             } else {
-                ___log('handler at', handlerIndex, ' not found');
+                ___log_bl('handler at', handlerIndex, ' not found');
                 return { name : cmd.command, value : { keys : cmd.keys, callback : () => {} }};
             }
         } else {
-            ___log('local handler ', localHandlerId, ' not found');
+            ___log_bl('local handler ', localHandlerId, ' not found');
         }
     }
 }
 
-function configureBlessedJs(cfg) {
+function configureBlessedAndLogging(cfg) {
     return function() {
         config.blessedOn = cfg.blessedOn;
-        config.loggingTo = cfg.loggingTo;
+        config.loggingBlessedTo  = cfg.loggingBlessedTo;
+        config.loggingCommandsTo = cfg.loggingCommandsTo;
+    }
+}
+
+function logCommandWhenEnabled(fn) {
+    return function() {
+        ___log_cmd(fn);
+    }
+}
+
+function ___log_bl() {
+    if (config.loggingBlessedTo && config.loggingBlessedTo === 'console') {;
+        console.log.apply(this, arguments);
+    } else if (config.loggingBlessedTo) {
+        if (!blessedLogFile) {
+            blessedLogFile = fs.createWriteStream(config.loggingBlessedTo, { flags: 'a' });
+        }
+        blessedLogFile.write(util.format.apply(null, arguments) + '\n');
+    }
+}
+
+function ___log_cmd(fn) {
+    if (config.loggingCommandsTo && config.loggingCommandsTo === 'console') {;
+        console.log(fn(null));
+    } else if (config.loggingCommandsTo) {
+        if (!commandsLogFile) {
+            commandsLogFile = fs.createWriteStream(config.loggingCommandsTo, { flags: 'a' });
+        }
+        commandsLogFile.write(util.format(fn(null)) + '\n');
     }
 }
 
 export const execute_ = execute;
 export const registerNode_ = registerNode;
 export const callCommandEx_ = callCommandEx;
-export const configureBlessedJs_ = configureBlessedJs;
+export const configureBlessedAndLogging_ = configureBlessedAndLogging;
+export const logCommandWhenEnabled_ = logCommandWhenEnabled;

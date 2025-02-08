@@ -203,7 +203,8 @@ newtype CommandEnc =
 newtype ConfigEnc =
     ConfigEnc
         { blessedOn :: Boolean
-        , loggingTo :: Json
+        , loggingBlessedTo :: Json
+        , loggingCommandsTo :: Json
         }
 
 
