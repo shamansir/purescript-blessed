@@ -1,0 +1,744 @@
+* Core : =Blessed.Core=
+** Styles
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Border=
+**** =type :: BorderType=
+***** =Line | Bg=
+**** =fg :: Color=
+**** =bg :: Color=
+**** =bold :: Boolean=
+**** =underline :: Boolean=
+**** =ch :: BorderChar=
+*** =Cursor=
+**** =artificial :: Boolean=
+**** =blink :: Boolean=
+**** =shape :: Shape=
+***** =Block | Underline | Line =
+**** =color :: Color=
+*** =Style=
+**** =fg :: Color=
+**** =bg :: Color=
+**** =border :: Array (BorderOption ())=
+**** =scrollbar :: Array (BorderOption ())=
+**** =hover :: Array (EndStyleOption ())=
+**** =focus :: Array (EndStyleOption ())=
+**** =transparent :: Boolean=
+*** =EndStyle=
+**** =fg :: Color=
+**** =bg :: Color=
+**** =border :: Array (BorderOption ())=
+**** =scrollbar :: Array (BorderOption ())=
+*** =ListStyle=
+**** =fg :: Color=
+**** =bg :: Color=
+**** =border :: Array (BorderOption ())=
+**** =scrollbar :: Array (BorderOption ())=
+**** =hover :: Array (EndStyleOption ())=
+**** =focus :: Array (EndStyleOption ())=
+**** =item :: Array (EndStyleOption ())=
+**** =selected :: Array (EndStyleOption ())=
+*** =Padding=
+**** =top :: Int=
+**** =left :: Int=
+**** =right :: Int=
+**** =bottom :: Int=
+** =Label=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =side :: Side=
+**** =Left | Right=
+*** =text :: String=
+** =Terminal=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =XTerm | WinAnsi=
+** =Helpers=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** TODO =merge(a, b)=
+*** TODO =asort(obj)=
+*** TODO =hsort(obj)=
+*** TODO =findFile(start, target)=
+*** TODO =escape(text)=
+*** TODO =parseTags(text)=
+*** TODO =generateTags(style, text)=
+*** TODO =attrToBinary(style, element)=
+*** TODO =stripTags(text)=
+*** TODO =cleanTags(text)=
+*** TODO =dropUnicode(text)=
+* UI : =Blessed.Ui=
+** =Base=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Element=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Blur=
+***** =Focus=
+***** =WheelDown=
+***** =WheelUp=
+***** =MouseDown=
+***** =MouseUp=
+***** =MouseOver=
+***** =MouseOut=
+***** =MouseMove=
+***** =Click=
+***** =KeyPress=
+***** =Key keys=
+***** =Move=
+***** =Resize=
+***** =Prerender=
+***** =Render=
+***** =Hide=
+***** =Show=
+***** =Destroy=
+**** =Method=
+***** =Content=
+****** =setContent=
+****** =getContent=
+****** =setText=
+****** =getText=
+****** =insertLine=
+****** =insertLines=
+****** =deleteLine=
+****** =getLine=
+****** =getBaseLine=
+****** =setLine=
+****** =setBaseLine=
+****** =clearLine=
+****** =clearBaseLine=
+****** =insertTop=
+****** =insertTops=
+****** =insertBottom=
+****** =insertBottoms=
+****** =deleteTop=
+****** =deleteBottom=
+****** =unshiftLine=
+****** =unshiftLines=
+****** =shiftLine=
+****** =pushLine=
+****** =pushLines=
+****** =popLine=
+****** =getLines=
+****** =getScreenLines=
+****** =strWidth=
+***** =render=
+***** =hide=
+***** =show=
+***** =toggle=
+***** =focus=
+***** =free=
+***** =destroy=
+***** =setIndex=
+***** =setFront=
+***** =setBack=
+***** =setLabel=
+***** =removeLabel=
+***** =removeHover=
+***** =enableMouse=
+***** =enableKeys=
+***** =enableInput=
+***** =enableDrag=
+***** =disableDrag=
+***** =screenshot=
+***** =screenshotArea=
+**** =Option=
+***** =fg=
+***** =bg=
+***** =bold=
+***** =underline=
+***** =style=
+***** =border=
+***** =content=
+***** =clickable=
+***** =input=
+***** =keyable=
+***** =focused=
+***** =hidden=
+***** =label=
+***** =hoverText=
+***** =align=
+***** =valign=
+***** =shrink=
+***** =padding=
+***** =width=
+***** =height=
+***** =left=
+***** =right=
+***** =top=
+***** =bottom=
+***** =scrollable=
+***** =ch=
+***** =draggable=
+***** =scrollable=
+***** =shadow=
+***** =tags=
+***** =hover=
+**** =Property=
+***** =name=
+***** =border=
+***** =style=
+***** =content=
+***** =hidden=
+***** =visible=
+***** =detached=
+***** =fg=
+***** =bg=
+***** =bold=
+***** =underline=
+***** =width=
+***** =height=
+***** =left=
+***** =right=
+***** =top=
+***** =bottom=
+***** =aleft=
+***** =aright=
+***** =atop=
+***** =abottom=
+***** =tags=
+***** =draggable=
+***** =hover=
+**** =PropertySet=
+***** =setLeft=
+***** =setTop=
+***** =setWidth=
+***** =setHeight=
+*** =Node=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Adopt=
+***** =Remove=
+***** =Reparent=
+***** =Attach=
+***** =Detach=
+**** =Method=
+***** =prepend=
+***** =append=
+***** =remove=
+***** =insert=
+***** =insertBefore=
+***** =insertAfter=
+***** =detach=
+***** =emitDescendants=
+***** =get=
+***** =set=
+**** =Option=
+***** =screen=
+**** =Property=
+***** =type=
+***** =options=
+***** =parent=
+***** =children=
+***** =data=
+***** =index=
+*** =Screen=
+**** =Event=
+***** =Init=
+***** =Key keys=
+***** =Resize=
+***** =Mouse=
+***** =Keypress=
+***** =ElementN nodeId=
+***** =KeyN nodeId=
+***** =Focus=
+***** =Blur=
+***** =Prerender=
+***** =Render=
+***** =Warning=
+***** =Destroy=
+**** =Method=
+***** =logM=
+***** =debugM=
+***** =alloc=
+***** =realloc=
+***** =draw=
+***** =render=
+***** =clearRegion=
+***** =fillRegion=
+***** =focusOffset=
+***** =focusPrevious=
+***** =focusNext=
+***** =focusPiush=
+***** =focusPop=
+***** =saveFocus=
+***** =restoreFocus=
+***** =rewindFocus=
+***** =spawn=
+***** =insertLine=
+***** =deleteLine=
+***** =insetBottom=
+***** =insertTop=
+***** =deleteBottom=
+***** =deleteTop=
+***** =enableMouse=
+***** =enableKeys=
+***** =enableInput=
+***** =copyToClipboard=
+***** =cursorShape=
+***** =cursorColor=
+***** =screenshot=
+***** =screenshotArea=
+***** =destroy=
+***** =setTerminal=
+**** =Option=
+***** =title=
+***** TODO =program=
+***** =smartCSR=
+***** =fastCSR=
+***** =useBCE=
+***** =resizeTimeout=
+***** =tabSize=
+***** =autoPadding=
+***** =cursor=
+***** =log=
+***** =dump=
+***** =debug=
+***** =ignoreLocked=
+***** =dockBorders=
+***** =ignoreDockContrast=
+***** =fullUnicode=
+***** =sendFocus=
+***** =warnings=
+***** TODO =input=
+***** TODO =output=
+***** =terminal=
+**** =Property=
+***** =focused=
+***** =width=
+***** =height=
+***** =cols=
+***** =rows=
+***** =left=
+***** =right=
+***** =top=
+***** =bottom=
+***** =aleft=
+***** =aright=
+***** =atop=
+***** =abottom=
+***** =grabKeys=
+***** =lockKeys=
+***** =hover=
+***** =terminal=
+***** =title=
+** =Boxes=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Box=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event= /same as Element.Event/
+**** =Method=
+***** =setContent=
+***** =setLine=
+***** =insertLine=
+***** =focus=
+**** =Option=
+***** =fg=
+***** =bg=
+***** =bold=
+***** =underline=
+***** =style=
+***** =border=
+***** =content=
+***** =clickable=
+***** =input=
+***** =keyable=
+***** =focused=
+***** =hidden=
+***** =label=
+***** =hoverText=
+***** =align=
+***** =valign=
+***** =shrink=
+***** =padding=
+***** =width=
+***** =height=
+***** =left=
+***** =right=
+***** =top=
+***** =bottom=
+***** =ch=
+***** =draggable=
+***** =scrollable=
+***** =shadow=
+***** =tags=
+**** =Property=
+***** =name=
+***** =border=
+***** =style=
+***** =content=
+***** =hidden=
+***** =visible=
+***** =detached=
+***** =fg=
+***** =bg=
+***** =bold=
+***** =underline=
+***** =width=
+***** =height=
+***** =left=
+***** =right=
+***** =top=
+***** =bottom=
+***** =aleft=
+***** =aright=
+***** =atop=
+***** =abottom=
+***** =tags=
+***** =draggable=
+*** =Line=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+**** =Option=
+***** =type=
+***** =bg=
+***** =fg=
+***** =ch=
+*** =Text=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Option=
+***** =fill=
+***** =align=
+*** =BigText=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Option=
+***** =font=
+***** =fontBold=
+***** =fch=
+** =Lists=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =List=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =Init=
+***** =Select=
+***** =Cancel=
+***** =Action=
+**** =Method=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** TODO =addItem=
+***** TODO removeItem
+***** TODO =pushItem=
+***** TODO =popItem=
+***** TODO =unshiftItem=
+***** TODO =shiftItem=
+***** TODO =insertItem=
+***** TODO =getItem=
+***** TODO =spliceItem=
+***** TODO =clearItems=
+***** TODO =setItems=
+***** TODO =getItemIndex=
+***** TODO =select=
+***** TODO =move=
+***** TODO =up=
+***** TODO =down=
+***** TODO =pick=
+***** TODO =fuzzyFind=
+**** =Option=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =orientation=
+***** =mouse=
+***** =keys=
+***** =vi=
+***** =items=
+***** =search=
+***** =interactive=
+***** =invertSelected=
+***** =style=
+**** =Property=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =selected=
+*** =ListBar=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =Init=
+***** =Select=
+***** =Command cmd keys=
+**** =Method=
+***** TODO =setItems=
+***** =addItem=
+***** =addItemH=
+***** =select=
+***** =remove=
+***** =move=
+***** =moveLeft=
+***** =moveRight=
+***** =selectTab=
+**** =Option=
+***** =items=
+***** =commands=
+***** =autoCommandKeys=
+*** =ListTable=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Method=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** TODO =setRows=
+**** =Option=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =rows=
+***** =pad=
+***** =noCellBorders=
+***** =style_header=
+***** =style_cell=
+*** =FileManager=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =Init=
+***** =Cd=
+***** =File=
+**** =Method=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** TODO =refresh=
+***** TODO =pick=
+***** TODO =reset=
+**** =Option=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =cwd=
+**** =Property=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =cwd=
+** =Forms=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Form=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Submit=
+***** =Cancel=
+***** =Reset=
+**** =Method=
+***** =focusNext=
+***** =focusPrevious=
+***** =submit=
+***** =cancel=
+***** =reset=
+**** =Option=
+***** =keys=
+***** =vi=
+**** =Property=
+***** =submission=
+***** TODO =program=
+***** TODO =tput=
+*** =Button=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Press=
+**** =Method=
+***** =press=
+**** =Option=
+***** =mouse=
+***** =keys=
+***** TODO =inputOnFocus=
+*** =Checkbox=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Check=
+***** =Uncheck=
+**** =Method=
+***** =check=
+***** =uncheck=
+***** =toggle=
+**** =Option=
+***** =text=
+***** =checked=
+***** =mouse=
+**** =Property=
+***** =text=
+***** =checked=
+*** =TextArea=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+***** =Init=
+***** =Submit=
+***** =Cancel=
+***** =Action=
+**** =Method=
+***** =submit=
+***** =cancel=
+***** =clearView=
+***** =setValue=
+**** =Option=
+***** =mouse=
+***** =keys=
+***** =inputOnFocus=
+**** =Property=
+***** =value=
+*** =TextBox=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event= /same as TextArea.Event/
+**** =Option=
+***** =secret=
+***** =censor=
+**** =Property=
+***** =secret=
+***** =censor=
+** =Prompts=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Loading=
+**** =Method=
+***** =load=
+***** =stop=
+*** =Message=
+**** =Method=
+***** TODO =display=
+***** TODO =error=
+*** =Prompt=
+**** =Method=
+***** =input=
+*** =Question=
+**** =Method=
+***** TODO =ask=
+** =DataDisplay=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =Log=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Method=
+***** =log=
+**** =Option=
+***** =scrollback=
+***** =scrollOnInput=
+**** =Property=
+***** =scrollback=
+***** =scrollbackOnInput=
+*** =ProgressBar=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Event=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =Init=
+***** =Reset=
+***** =Complete=
+**** =Method=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =progress=
+***** =reset=
+**** =Option=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =orientation=
+***** =style_bar=
+***** =filled=
+***** =pch=
+***** =keys=
+***** =mouse=
+*** =Table=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Method=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =setRows=
+**** =Option=
+:PROPERTIES:
+:collapsed: true
+:END:
+***** =rows=
+***** =pad=
+***** =noCellBorders=
+***** =fillCellBorders=
+***** =style_header=
+***** =style_cell=
+** =Special=
+:PROPERTIES:
+:collapsed: true
+:END:
+*** =ANSIImage=
+*** =Image=
+*** =OverlayImage=
+*** =Terminal=
+:PROPERTIES:
+:collapsed: true
+:END:
+**** =Option=
+***** TODO =handler=
+***** =shell=
+***** =args=
+***** =cursor=
+***** =terminal=
+*** =Video=
