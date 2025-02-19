@@ -483,3 +483,7 @@ instance Extends Box RadioButton
 instance Extends Input RadioButton
 instance Extends Checkbox RadioButton
 instance Extends RadioButton RadioButton
+
+instance Extends Node Log
+instance Extends Element Log
+instance Extends Box Log

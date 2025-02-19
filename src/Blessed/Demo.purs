@@ -4,6 +4,8 @@ import Prelude
 
 
 import Effect (Effect)
+import Effect.Class (liftEffect)
+import Effect.Console (log) as Console
 
 -- import Data.Text.Output.Blessed (multiLine) as Blessed
 
@@ -18,14 +20,15 @@ import Blessed.Internal.BlessedOp (configureJs', BlessedJsConfig, LoggingTarget(
 
 import Blessed.Core.Key (alpha, control, escape, enter) as Key
 import Blessed.Core.Dimension (percents) as Dimension
-import Blessed.Core.Offset (center) as Offset
+import Blessed.Core.Offset (center, px) as Offset
 import Blessed.Core.Border (type_, _line, fg) as Border
 import Blessed.Core.Style (fg, bg, border, hover) as Style
 import Blessed.Core.EndStyle (bg) as ES
 
 import Blessed.UI.Base.Screen.Event (key) as Screen
 import Blessed.UI.Base.Screen.Method (render) as Screen
-import Blessed.UI.Base.Screen.Option (fullUnicode, smartCSR, title) as Screen
+import Blessed.UI.Base.Screen.Option as Screen
+import Blessed.UI.Base.Screen.Property as ScreenGet
 import Blessed.UI.Boxes.Box.Method (focus, insertLine, setContent, setLine) as Box
 import Blessed.UI.Boxes.Box.Option (border, content, height, left, style, tags, top, width) as Box
 import Blessed.UI.Base.Element.Event (ElementEvent(..), key) as Element
@@ -40,9 +43,11 @@ theBox = nk :: Box <^> "demo-box"
 
 
 main :: Effect Unit
-main = demo
+--main = demo
 -- Uncomment to enable logging:
--- main = configureJs' logEverythingConfig *> demo
+main = do
+    liftEffect $ Console.log "BEFORE"
+    -- configureJs' logEverythingConfig *> demo
 
 
 demo :: Effect Unit
@@ -54,7 +59,14 @@ screen =
     B.screenAnd mainScreen
         [ Screen.title "my window title"
         , Screen.smartCSR true
+        , Screen.fastCSR true
         , Screen.fullUnicode true
+        , Screen.log true
+        , Screen.dump true
+        , Screen.debug true
+        , Screen.terminal "xterm-256color"
+        -- , Screen.resizeTimeout 1
+        , Screen.autoPadding true
         , Screen.key
             [ Key.escape, Key.alpha 'q', (Key.control $ Key.alpha 'C') ]
             $ \_ kevt -> do
@@ -65,14 +77,18 @@ screen =
         $ \_ -> do
             theBox >~ Box.focus
             mainScreen >~ Screen.render
+            width <- ScreenGet.width mainScreen
+            height <- ScreenGet.height mainScreen
+            liftEffect $ Console.log $ show width
+            liftEffect $ Console.log $ show height
 
 
 
 box :: Core.Blessed State
 box =
     B.box theBox
-        [ Box.top    $ Offset.center -- Offset.calc $ Coord.center <+> Coord.px 1
-        , Box.left   $ Offset.center
+        [ Box.top    $ Offset.px 0 -- $ Offset.center -- Offset.calc $ Coord.center <+> Coord.px 1
+        , Box.left   $ Offset.px 0 -- $ Offset.center
         , Box.width  $ Dimension.percents 50.0
         , Box.height $ Dimension.percents 50.0
         , Box.content "Hello {bold}world{/bold}!"
@@ -86,9 +102,9 @@ box =
             , Style.border
                 [ Border.fg "#f0f0f0"
                 ]
-            , Style.hover
-                [ ES.bg "green"
-                ]
+            -- , Style.hover
+            --     [ ES.bg "green"
+            --     ]
             ]
         , Core.on Element.Click $ \_ _ -> do
             theBox >~ Box.setContent "{center}Some different {red-fg}content{/red-fg}.{/center}"

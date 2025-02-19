@@ -38,6 +38,8 @@ import Blessed.UI.Forms.TextArea (textArea, textAreaAnd) as TextArea
 import Blessed.UI.Forms.TextArea.Option (OptionsRow) as TextArea
 import Blessed.UI.Forms.TextBox (textBox, textBoxAnd) as TextBox
 import Blessed.UI.Forms.TextBox.Option (OptionsRow) as TextBox
+import Blessed.UI.DataDisplay.Log (log, logAnd) as Log
+import Blessed.UI.DataDisplay.Log.Option (OptionsRow) as Log
 
 
 import Data.Codec.Argonaut as CA
@@ -206,6 +208,22 @@ textBoxAnd
     => NodeKey Subject.TextBox id
     -> C.NodeAnd Subject.TextBox id ( Box.OptionsRow + TextArea.OptionsRow + TextBox.OptionsRow + r ) state {- TextBox.Event -}
 textBoxAnd = TextBox.textBoxAnd
+
+
+log
+    :: forall id r state
+     . IsSymbol id
+    => NodeKey Subject.Log id
+    -> C.Node Subject.Log id ( Box.OptionsRow + Log.OptionsRow + r ) state {- Log.Event -}
+log = Log.log
+
+
+logAnd
+    :: forall id r state
+     . IsSymbol id
+    => NodeKey Subject.Log id
+    -> C.NodeAnd Subject.Log id ( Box.OptionsRow + Log.OptionsRow + r ) state {- Log.Event -}
+logAnd = Log.logAnd
 
 
 exit :: forall state m. I.BlessedOp state m

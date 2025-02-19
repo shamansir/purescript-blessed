@@ -8,7 +8,6 @@ import Type.Row (type (+))
 import Data.Symbol (class IsSymbol)
 import Type.Proxy (Proxy(..))
 
-
 import Blessed.Internal.Core (Node, NodeAnd, node, nodeAnd) as C
 import Blessed.Internal.BlessedSubj (Line) as Subject
 import Blessed.Internal.NodeKey (NodeKey)
