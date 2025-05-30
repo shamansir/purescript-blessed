@@ -2,3 +2,6 @@
 .psc-ide-port
 .purs-repl
 output
+output.legacy
+blessed.log.txt
+commands.log.txt

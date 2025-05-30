@@ -46,8 +46,8 @@ main :: Effect Unit
 --main = demo
 -- Uncomment to enable logging:
 main = do
-    liftEffect $ Console.log "BEFORE"
-    -- configureJs' logEverythingConfig *> demo
+    -- liftEffect $ Console.log "BEFORE"
+    configureJs' logEverythingConfig *> demo
 
 
 demo :: Effect Unit
