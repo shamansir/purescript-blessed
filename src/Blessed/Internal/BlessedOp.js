@@ -67,14 +67,20 @@ function adaptProp(hs, parentProp) {
 
 function execute(program) {
     return function() {
-        const {columns, rows} = terminalSize();
-        process.stdout.isTTY = true;
-        process.stdout.columns = columns;
-        process.stdout.rows = rows;
+        ensureTTY();
         registry = {};
         handlersFns = buildRecord(program.handlersFns, (hdl) => ({ name : hdl.index, value : hdl }));
 
         registerNode(program.root)();
+    }
+}
+
+function ensureTTY() {
+    if (!process.stdout.isTTY) {
+        const {columns, rows} = terminalSize();
+        process.stdout.isTTY = true;
+        process.stdout.columns = columns;
+        process.stdout.rows = rows;
     }
 }
 

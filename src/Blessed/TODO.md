@@ -1,6 +1,6 @@
 # TODO
 
-* wrap `blessed.Program` and `tput` / `tty` configuration as well;
+* wrap `blessed.Program` and `tput` / `tty` configuration as well; (and try to replace `ensureTTY` hack in `BlessedOp.js` with custom terminal)
 * register handlers passed from `BlessedOp` methods;
 * generate/implement all known methods (see comments in `Method` modules);
 * generate/implement all known events + shortcut handlers for them: `on<Event>` + `<event> : LocalEvent`; (so one could assign handlers inside `BlessedOp`)
