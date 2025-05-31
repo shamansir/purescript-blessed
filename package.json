@@ -1,0 +1,26 @@
+{
+  "name": "purescript-blessed",
+  "version": "1.0.0",
+  "description": "Blessed API for purescript",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shamansir/purescript-blessed.git"
+  },
+  "author": "Ulric Wilfred a.k.a. shamansir a.k.a. Elektrokilka",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shamansir/purescript-blessed/issues"
+  },
+  "homepage": "https://github.com/shamansir/purescript-blessed#readme",
+  "dependencies": {
+    "reblessed": "^0.2.1",
+    "terminal-size": "^4.0.0"
+  }
+}

@@ -1,13 +1,14 @@
-// "use strict";
-
 // const blessed = require('blessed');
 // const fs = require('fs');
 // const util = require('util');
 
-import blessed from 'blessed';
+// const blessed = require('blessed');
+import blessed from 'reblessed';
+import terminalSize from 'terminal-size';
 import * as fs from 'fs';
 import * as util from 'util';
 
+// console.log(blessedPkg);
 // console.log(blessed);
 
 let config =
@@ -66,7 +67,10 @@ function adaptProp(hs, parentProp) {
 
 function execute(program) {
     return function() {
-        ___log_bl('program', program);
+        const {columns, rows} = terminalSize();
+        process.stdout.isTTY = true;
+        process.stdout.columns = columns;
+        process.stdout.rows = rows;
         registry = {};
         handlersFns = buildRecord(program.handlersFns, (hdl) => ({ name : hdl.index, value : hdl }));
 

@@ -1,10 +1,14 @@
 module Blessed.UI.Base.Screen.Option where
 
+import Prelude ((<<<))
+
+import Node.Path (FilePath)
 
 import Prim.Row as R
 import Type.Proxy (Proxy(..))
 import Type.Row (type (+))
 import Data.Symbol (class IsSymbol)
+import Data.Maybe (Maybe(..))
 
 import Data.Argonaut.Encode (class EncodeJson)
 
@@ -27,12 +31,12 @@ type OptionsRow r =
     , smartCSR :: Boolean
     , fastCSR :: Boolean
     , useBCE :: Boolean
-    , resizeTimout :: Int
+    , resizeTimeout :: Int
     , tabSize :: Int
     , autoPadding :: Boolean
     , cursor :: Cursor
-    , log :: Boolean -- could be a file path
-    , dump :: Boolean -- could be a file path
+    , log :: Maybe FilePath
+    , dump :: Maybe FilePath
     , debug :: Boolean
     , ignoreLocked :: Array Key
     , dockBorders :: Boolean
@@ -91,19 +95,19 @@ useBCE
 useBCE = screenOption (Proxy :: _ "useBCE")
 
 
-{- resizeTimout
+{- resizeTimeout
     :: forall (subj :: Subject) (id :: Symbol) r state e
      . Respresents Screen subj id
-    => Milliseconds -> ScreenAttribute subj id ( resizeTimout :: Milliseconds | r ) state e
-resizeTimout = screenOption (Proxy :: _ "resizeTimout")
+    => Milliseconds -> ScreenAttribute subj id ( resizeTimeout :: Milliseconds | r ) state e
+resizeTimeout = screenOption (Proxy :: _ "resizeTimeout")
 -}
 
 
-resizeTimout
+resizeTimeout
     :: forall (subj :: Subject) (id :: Symbol) r state e
      . Respresents Screen subj id
-    => Int -> ScreenAttribute subj id ( resizeTimout :: Int | r ) state e
-resizeTimout = screenOption (Proxy :: _ "resizeTimout")
+    => Int -> ScreenAttribute subj id ( resizeTimeout :: Int | r ) state e
+resizeTimeout = screenOption (Proxy :: _ "resizeTimeout")
 
 
 tabSize
@@ -130,15 +134,15 @@ cursor = screenOption (Proxy :: _ "cursor")
 log
     :: forall (subj :: Subject) (id :: Symbol) r state e
      . Respresents Screen subj id
-    => Boolean  -> ScreenAttribute subj id ( log :: Boolean  | r ) state e
-log = screenOption (Proxy :: _ "log")
+    => FilePath -> ScreenAttribute subj id ( log :: Boolean  | r ) state e
+log = screenOption (Proxy :: _ "log") <<< Just
 
 
 dump
     :: forall (subj :: Subject) (id :: Symbol) r state e
      . Respresents Screen subj id
-    => Boolean  -> ScreenAttribute subj id ( dump :: Boolean  | r ) state e
-dump = screenOption (Proxy :: _ "dump")
+    => FilePath -> ScreenAttribute subj id ( dump :: Boolean  | r ) state e
+dump = screenOption (Proxy :: _ "dump") <<< Just
 
 
 debug

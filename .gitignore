@@ -5,3 +5,7 @@ output
 output.legacy
 blessed.log.txt
 commands.log.txt
+index.js
+test-minimal.js
+test.js
+node_modules

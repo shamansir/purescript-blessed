@@ -1,39 +1,38 @@
 package:
-  description:
-    "PureScript API wrapper for chjj/blessed Terminal User Interface library"
+  description: "PureScript API wrapper for chjj/blessed Terminal User Interface library"
   dependencies:
-  - aff
-  - argonaut-codecs
-  - argonaut-core
-  - arrays
-  - bifunctors
-  - codec
-  - codec-argonaut
-  - console
-  - effect
-  - either
-  - enums
-  - exceptions
-  - foldable-traversable
-  - free
-  - identity
-  - maybe
-  - newtype
-  - node-buffer
-  - node-fs-aff
-  - node-path
-  - ordered-collections
-  - prelude
-  - profunctor
-  - refs
-  - spec
-  - strings
-  - tailrec
-  - transformers
-  - tuples
-  - typelevel-prelude
-  - unfoldable
-  - unsafe-coerce
+    - aff
+    - argonaut-codecs
+    - argonaut-core
+    - arrays
+    - bifunctors
+    - codec
+    - codec-argonaut
+    - console
+    - effect
+    - either
+    - enums
+    - exceptions
+    - foldable-traversable
+    - free
+    - identity
+    - maybe
+    - newtype
+    - node-buffer
+    - node-fs
+    - node-path
+    - ordered-collections
+    - prelude
+    - profunctor
+    - refs
+    - spec
+    - strings
+    - tailrec
+    - transformers
+    - tuples
+    - typelevel-prelude
+    - unfoldable
+    - unsafe-coerce
   name: blessed
   publish:
     version: 1.0.0
@@ -47,11 +46,14 @@ package:
       - "src/Blessed/blessed.dot"
       - "src/Blessed/blessed-demo.js"
       - "src/Blessed/API.md"
+  bundle:
+    module: Blessed.Demo
+    extraArgs:
+      - "--external:blessed"
   run:
     main: Blessed.Demo
 workspace:
   # backend:
   #   cmd: "node"
-  extra_packages: {}
-  package_set:
-    url: https://raw.githubusercontent.com/purescript/package-sets/psc-0.15.8-20230605/packages.json
+  packageSet:
+    url: https://raw.githubusercontent.com/purescript/package-sets/psc-0.15.15-20250523/packages.json

@@ -40,14 +40,14 @@ type State = Unit
 
 mainScreen = nk :: Screen <^> "main-scr"
 theBox = nk :: Box <^> "demo-box"
+theFullSizeBox = nk :: Box <^> "full-size-box"
 
 
 main :: Effect Unit
---main = demo
+main = demo
 -- Uncomment to enable logging:
-main = do
-    -- liftEffect $ Console.log "BEFORE"
-    configureJs' logEverythingConfig *> demo
+-- main = do
+--     configureJs' logEverythingConfig *> demo
 
 
 demo :: Effect Unit
@@ -59,13 +59,12 @@ screen =
     B.screenAnd mainScreen
         [ Screen.title "my window title"
         , Screen.smartCSR true
-        , Screen.fastCSR true
         , Screen.fullUnicode true
-        , Screen.log true
-        , Screen.dump true
-        , Screen.debug true
+        , Screen.useBCE true
+        -- , Screen.log true
+        -- , Screen.dump true
+        -- , Screen.debug true
         , Screen.terminal "xterm-256color"
-        -- , Screen.resizeTimeout 1
         , Screen.autoPadding true
         , Screen.key
             [ Key.escape, Key.alpha 'q', (Key.control $ Key.alpha 'C') ]
@@ -87,8 +86,8 @@ screen =
 box :: Core.Blessed State
 box =
     B.box theBox
-        [ Box.top    $ Offset.px 0 -- $ Offset.center -- Offset.calc $ Coord.center <+> Coord.px 1
-        , Box.left   $ Offset.px 0 -- $ Offset.center
+        [ Box.top    $ Offset.center -- Offset.calc $ Coord.center <+> Coord.px 1
+        , Box.left   $ Offset.center
         , Box.width  $ Dimension.percents 50.0
         , Box.height $ Dimension.percents 50.0
         , Box.content "Hello {bold}world{/bold}!"

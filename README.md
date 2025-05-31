@@ -19,7 +19,12 @@ Not yet translated/implemented:
 
 ## Installation
 
-It is crucial to install `npm install -g blessed` beforehand and ensure to have the latest version of node.js, or just the best one of the latest versions.
+It is crucial to install with `npm install` or `npm install -g` beforehand and ensure to have the latest version of node.js, or just the best one of the latest versions.
+
+It requires only two libraries:
+
+* `npm install reblessed` (from `git@github.com:kenan238/reblessed.git`)
+* `npm install terminal-size` (from `git@github.com:sindresorhus/terminal-size.git`)
 
 The library is not distributed (yet?) so there's no `spago install`, sorry. But you may add it to `packages.dhall` using custom git link, just name it `blessed` or something.
 
@@ -99,6 +104,21 @@ All the components are of type `Blessed m` where `m` is usually just the `Effect
 To run the application, use `Blessed.run <initialState> <rootComponent>` or `Blessed.runAnd <initialState> <rootComponent> $ do ....`.
 
 ## Examples
+
+There is a demo in the repository `src/Blessed/Demo.purs` which mirrors the original example from Blessed and can give you the impression on how the API translates to PureScript.
+
+To run it, just call `spago run` and that should be it. But `spago` can spawn the process in the terminal differently to the simple `node` execution, so if you see the black screen (which is actually 1x1 window), try creating the bundle and then run it:
+
+```bash
+spago bundle --bundle-type app --platform node --outfile index.js
+node index.js
+```
+
+Also try:
+
+```bash
+spago run --quiet --censor-stats
+```
 
 You may see many examples of its usage in the `Noodle/Cli` application, and currently this repo is just the extract from there. [Noodle CLI components](https://github.com/shamansir/noodle/tree/main/src/Cli/Components).
 
