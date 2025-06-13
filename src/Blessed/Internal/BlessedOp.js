@@ -3,7 +3,7 @@
 // const util = require('util');
 
 // const blessed = require('blessed');
-import blessed from 'reblessed';
+import blessed from '@shamansir/everblessed';
 import terminalSize from 'terminal-size';
 import * as fs from 'fs';
 import * as util from 'util';

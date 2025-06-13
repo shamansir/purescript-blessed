@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/shamansir/purescript-blessed#readme",
   "dependencies": {
-    "everblessed": "github:shamansir/everblessed",
+    "@shamansir/everblessed": "^0.3.0",
     "terminal-size": "^4.0.0"
   }
 }

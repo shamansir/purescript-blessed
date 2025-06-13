@@ -23,12 +23,12 @@ It is crucial to install with `npm install` or `npm install -g` beforehand and e
 
 It requires only two libraries:
 
-* `npm install reblessed` (from `git@github.com:kenan238/reblessed.git`)
+* `npm install @shamansir/everblessed` (almost identical to `git@github.com:kenan238/reblessed.git`, with few changes to make it work on NixOS)
 * `npm install terminal-size` (from `git@github.com:sindresorhus/terminal-size.git`)
 
 The library is not distributed (yet?) so there's no `spago install`, sorry. But you may add it to `packages.dhall` using custom git link, just name it `blessed` or something.
 
-To test it: run `spago run -m Blessed.Demo`. It is the PureScript version of the demo in the `README.md` of `chjj/blessed` repository.
+To test it: run `spago run`, or `spago run -m Blessed.Demo`. It is the PureScript version of the demo in the `README.md` of `chjj/blessed` repository.
 
 ## Quick intro to the API
 
